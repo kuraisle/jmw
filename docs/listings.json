@@ -1,0 +1,23 @@
+[
+  {
+    "listing": "/data-analysis/index.html",
+    "items": [
+      "/data-analysis/mp_expense_carbon.html",
+      "/data-analysis/making_a_dose-response_curve.html"
+    ]
+  },
+  {
+    "listing": "/papers/index.html",
+    "items": [
+      "/papers/abcg2_tr-fret.html",
+      "/papers/SMALP_methods.html",
+      "/papers/functional divergence.html",
+      "/papers/ABCG review.html",
+      "/papers/rhodopsin_encyclopedia.html",
+      "/papers/pSRII_nmr.html",
+      "/papers/retinitis_pigmentosa_mutants.html",
+      "/papers/chlorin_e6.html",
+      "/papers/pSRII_abs.html"
+    ]
+  }
+]

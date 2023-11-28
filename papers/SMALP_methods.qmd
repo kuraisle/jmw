@@ -1,0 +1,9 @@
+---
+title: "Detergent-Free Membrane Protein Purification Using SMA Polymer"
+format: html
+description: A review of methods for resuspending membrane proteins in SMALPs
+date-format: iso
+date: 2022-07-01
+---
+
+[DOI: 10.1007/978-1-0716-2368-8_21](https://doi.org/10.1007/978-1-0716-2368-8_21)

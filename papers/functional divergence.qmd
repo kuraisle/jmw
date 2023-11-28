@@ -1,0 +1,22 @@
+---
+title: "Analysis of sequence divergence in mammalian ABCGs predicts a structural network of residues that underlies functional divergence"
+format: html
+description: Using information theory to explore differences in a protein family
+date-format: iso
+date: 2021-03-16
+---
+
+While I was helping to write [this review](ABCG%20review.qmd), I was given a section to write looking at the sequence differences between ABCG2 and ABCG5/G8. Normally I would just have aligned the sequences, had a look at some likely spots for functional differences and left it there. As it was lockdown, I had the time to think about the question more deeply. If you just align two sequences, any differences you see might just be normal, random variation. However, if you align a lot of sequences, you can start to make better inferences about what the differences might mean.
+The ABCG family of mammalian ATP-binding cassete proteins has five members with different functions.
+
+| | | |
+|---|---|---|
+| ABCG1 | Cholesterol transport | Homodimer, but will dimerize with |
+| ABCG2 | Multidrug transport | Homodimer, but will dimerize with |
+| ABCG4 | Cholesterol transport | Homodimer, but will dimerize with |
+| ABCG5 | Bile acid transport | Obligate heterodimer with ABCG8 |
+| ABCG8 | Bile acid transport | Obligate heterodimer with ABCG5 |
+
+The difference I'm most interested in is that most of the family binds a pretty narrow category of molecules: sterol-like lipids. ABCG2, which I was working on at the time, transports a wide range of different molecules, which we call a broad substrate specificity. 
+
+[DOI:10.3390/ijms22063012](https://doi.org/10.3390/ijms22063012)

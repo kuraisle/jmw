@@ -1,0 +1,22 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "James Mitchell-White"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: papers/index.qmd
+        text: Papers
+      - href: data-analysis/index.qmd
+        text: Data Analysis
+format:
+  html:
+    theme: flatly
+    css: styles.css
+    toc: true
+
+
+

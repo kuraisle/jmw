@@ -1,0 +1,11 @@
+---
+title: "Characterization of Denatured States and Reversible Unfolding of Sensory Rhodopsin II"
+format: html
+description: Sensory rhodopsin II makes a good model for the folding of some membrane proteins. This paper uses biophysical techniques to characterize parts of its folding mechanism.
+date-format: iso
+date: 2018-10-19
+---
+
+
+
+[DOI: 10.1016/j.jmb.2018.07.031](https://doi.org/10.1016/j.jmb.2018.07.031)

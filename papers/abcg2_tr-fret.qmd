@@ -1,0 +1,9 @@
+---
+title: "A time-resolved Förster resonance energy transfer assay to investigate inhibitor binding to ABCG2 (preprint)"
+format: html
+description: The first use of resonance in an assay to measure binding to a transmembrane transporter
+date-format: iso
+date: 2023-10-27
+---
+
+[DOI: 10.1101/2023.10.27.564323](https://doi.org/10.1101/2023.10.27.564323)

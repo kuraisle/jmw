@@ -1,0 +1,28 @@
+---
+title: "Picky ABCG5/G8 and promiscuous ABCG2‐a tale of fatty diets and drug toxicity"
+format: html
+description: A review of the differences between ABCG family transporters
+date-format: iso
+date: 2020-09-26
+---
+
+For this review I got to work with some of the big names in the field of transmembrane transporters, and with some very driven fellow junior researchers. Sadly, as this was in 2020, we couldn't have the discussions in person, but I still had a great time listening to the big-brains talking and frantically trying to take some notes.
+
+::: {.grid}
+
+::: {.g-col-6}
+{{< mol-rcsb 5DO7 collapseRightPanel=true >}}
+*ABCG5/G8 (5DO7)*
+:::
+
+::: {.g-col-6}
+{{< mol-rcsb 6VXF collapseRightPanel=true >}}
+*ABCG2 (6VXF)*
+:::
+:::
+
+
+The review covers the background to the structural data available for the ABCG family transporters. Jyh-Yeuan Lee, one of the corresponding authors for the paper, leads the group that resolved the first crystal structure of ABCG5/G8, and continues to produce interesting papers on ABCG structures. That means this paper can be authoritative on the matter. The other corresponding authors have all done great work analysing these structures through modelling and experiments, so they're well placed to tell the story of how the structures relate to ABCG family function.
+I am joint first author on this paper. It was a great experience working with my fellow authors to get this one written!
+
+[doi: 10.1002/1873-3468.13938](https://doi.org/10.1002/1873-3468.13938)

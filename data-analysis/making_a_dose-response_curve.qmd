@@ -1,0 +1,91 @@
+---
+title: "Making a dose-response curve"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+image: dose_response.png
+description: A toy example of how pharmacologists determine binding coefficients using saturation binding data.
+date-format: iso
+date: 2023-11-27
+---
+In pharmacology, the models used to interpret some measurable response to a range of administered concentrations are derived from the [Hill equation](https://en.wikipedia.org/wiki/Hill_equation_(biochemistry)). The most basic form of such a curve is: $Y = B_{max}\times \frac{X}{X+EC_{50}}$, where B<sub>max</sub> is the maximal response, and the EC<sub>50</sub> is the concentration at which half the response is achieved.
+
+Here is one where you can control the B<sub>max</sub> and EC<sub>50</sub>. The axes are fixed so that the effects on the curve can be seen. We have a nice ligand here with an EC<sub>50</sub> in the range of 100 picomolar to 10 micromolar. For fun, I've also put in some pretend data so you can have an idea of what your data might look like.
+
+:::{.grid}
+
+:::{.g-col-8}
+```{ojs}
+viewof simple_b_max = Inputs.range([.1, 1], {value: 0.5, step: 0.1, label: "Bmax"})
+```
+:::
+
+:::{.g_col-4}
+```{ojs}
+viewof simple_k_d = Inputs.range([-10, -5], {value: -8, step: 0.1, label: "log Kd"})
+```
+:::
+
+:::
+
+```{ojs}
+x_arr = {
+  const start = -10;
+  const end = -5;
+  const n_steps = 200;
+  const step = (end-start)/n_steps;
+  return [...Array(n_steps).keys()]
+    .map(n => n*step+start)
+    .map(n => 10**n)
+}
+
+sim_exp_x_arr = [1, 3, 10, 30, 100, 300, 1000, 3000, 10000].map(x => x*10**-9)
+
+d_r = (x, bmax, ec50) => bmax * (x/(x+ec50))
+
+simple_d_r = x_arr.map(x_val => ({dose: x_val, response: d_r(x_val, simple_b_max, 10**simple_k_d)}))
+
+sim_exp_y = {
+  let y_sim = sim_exp_x_arr.map((x_val => d_r(x_val, simple_b_max, 10**simple_k_d)))
+  let random = d3.randomNormal(0, simple_b_max/20)
+  let y_err = [Float64Array.from({length: 9}, random), Float64Array.from({length: 9}, random), Float64Array.from({length: 9}, random)]
+  function addvector(a,b){
+    return a.map((e,i) => e + b[i]);
+  }
+  let response = [
+    addvector(y_sim, y_err[0]),
+    addvector(y_sim, y_err[1]),
+    addvector(y_sim, y_err[2])
+    ]
+  return [...Array(9).keys()].map(i => ({dose: sim_exp_x_arr[i],
+                                         response1: response[0][i],
+                                         response2: response[1][i],
+                                         response3: response[2][i]}))
+}
+```
+
+::: {.grid}
+
+
+::: {.g-col-8}
+
+```{ojs}
+Plot.plot({
+  marks: [
+    Plot.line(simple_d_r, {x: "dose", y: "response"}),
+    Plot.dot(sim_exp_y, {x: "dose", y: "response1"}),
+    Plot.dot(sim_exp_y, {x: "dose", y: "response2"}),
+    Plot.dot(sim_exp_y, {x: "dose", y: "response3"})
+  ],
+  x: {type: "log"},
+  y: {domain: [0,1.2]}
+})
+```
+:::
+::: {.g-col-4}
+
+
+
+:::
+:::

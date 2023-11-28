@@ -1,0 +1,17 @@
+---
+title: "Structural and Functional Consequences of the Weak Binding of Chlorin e6 to Bovine Rhodopsin"
+format: html
+description: Deep-sea fish use a molecule derived from chlorophyll to see into the far red. This paper explores the interaction between this molecule and rhodopsin
+date-format: iso
+date: 2018-12-24
+---
+
+One day, my German-American PhD supervisor called me into her office and asked if I could get her in touch with David Attenborough. I had to explain that, sadly, David Attenborough is really second only to the royal family over here, and getting a direct line would be tricky.
+
+She wanted to know about the research done for an episode of *Blue Planet* showing a very ugly fish, *Malacosteus niger*. Luckily I could find the scientists consulted for that segment of the program (including, appropriately, Professor Herring). Most bioluminescence underwater is blue, and the creatures looking for it have blue-sensitive vision to match. The dragonfishes have red bioluminescence, but their rhodopsin itself is not red sensitive. Instead, it metabolises chlorophyll from its diet to produce a red-sensitive pigment, chlorin e6. We didn't know how, (though work on this [has continued](https://doi.org/10.1021/acs.jpclett.9b02911)) but somehow the red sensitivity of this pigment results in red sensitive vision.
+
+My main contribution to this work was in the analysis of the absorbance spectra. We were measuring the activation of rhodopsin by how its absorbance spectrum changed. Trying to compare activation of rhodopsin by red light with and without added chlorin was complicated by chlorin's absorbance completely swamping the rhodopsin absorbance. We managed to separate out the absorbance by the two molecules and show that rhodopsin's absorbance wasn't affected by chlorin binding.
+
+The rest of the paper is a huge amount of other biophysical data exploring the nature of the interaction. Until I re-read the paper recently, I had forgotten that this is also the first bit of comparison of protein sequences I carried out.
+
+[DOI: 10.1111/php.13074](https://doi.org/10.1111/php.13074)

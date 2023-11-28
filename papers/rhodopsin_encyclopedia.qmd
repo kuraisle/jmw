@@ -1,0 +1,9 @@
+---
+title: "Rhodopsin and Sensory Rhodopsin II: Stability and Characterization of Unfolded Structures"
+format: html
+description: An encyclopedia article on the use of opsins as models for membrane protein folding.
+date-format: iso
+date: 2020-09-26
+---
+
+[DOI: 10.1007/978-3-642-35943-9_790-1](https://doi.org/10.1007/978-3-642-35943-9_790-1)

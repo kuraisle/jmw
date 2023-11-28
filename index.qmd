@@ -1,0 +1,42 @@
+---
+title: "Welcome"
+about:
+    template: jolla
+    image: profile.jpg
+    links:
+        - icon: github
+          text: Github
+          href: https://github.com/kuraisle
+        - icon: orcid
+          text: ORCiD
+          href: https://orcid.org/0000-0003-2818-8538
+        - icon: instagram
+          text: instagram
+          href: https://www.instagram.com/wantstotakephotos/
+        - icon: envelope
+          text: email
+          href: mailto:jamesjimitchell@gmail.com
+toc: false
+---
+
+I am James Mitchell-White, a scientist from the UK. I have worked as a biochemist, and you may be interested in my [published works](papers/index.qmd). My research focuses on the dynamics of membrane proteins, starting with the use of models for the folding of α-helical membrane proteins, and moving on to the transport mechanism of membrane transporters.
+
+I used to have a lot of hobbies, now I just have a kid. I can't help but play around with a few side projects though, and I'm starting to put some of them [here](data-analysis/index.qmd).
+
+If you find any of this interesting and have questions this site doesn't answer, please get in touch!
+
+### Excellerate Biosciences
+ | |
+:---|---:|
+ Senior Scientist | October 2022 - April 2023 |
+
+### University of Nottingham
+ | |
+:---|---:|
+Postdoctoral Research Fellow | February 2019 - September 2022
+
+### University of Warwick
+ | |
+:---|---:|
+PhD, Medical Sciences | September 2014 - April 2018
+BSc, Biochemistry | September 2011 - June 2014
