@@ -1,0 +1,134 @@
+---
+title: "Simulating a first-order reaction"
+format:
+    html:
+        code-fold: true
+        code-summary: Show the code
+description: The first step in simulating reaction kinetics
+fig-align: center
+date-format: iso
+date: 2023-11-30
+---
+
+Let's think about a first-order reaction. The rate of such a reaction depends only on the rate constant and the concentration of one species. Ours will be a single molecule $A$ going to a molecule $B$ with a rate coefficient $k$:
+$$A \overset{k}{\rightarrow} B$$
+The overall rate of this reaction is $-\frac{d[A]}{dt} = k[A]$ - the change in the concentration of A or B over time is proportional to $[A]$.
+
+As this is a rate expressed as a differential equation, to find the concentration of [A] at a given time, you can integrate this equation, resulting in:
+$$[A] = [A]_0 e^{-kt}$$
+
+This you might recognise as an exponential decay curve.
+
+To demonstrate what this looks like in a couple of ways, we have a grid of 10,000 particles. A is green, B is purple. Below that is a curve showing how many of these particles are in state A. Play with the rate coefficient a bit to see what happens.
+
+:::{.grid}
+
+:::{.g-col-6}
+```{ojs}
+//| echo: false
+
+viewof rateConstant = Inputs.range([.1, 1], {value: 0.2, step:.05, label: "k"})
+```
+:::
+
+:::{.g-col-6}
+```{ojs}
+//| echo: false
+
+viewof vis_T = Inputs.range([0,249], {value:0, step: 1, label: "Time step"})
+```
+
+```{ojs}
+//| echo: false
+
+current_state = states[vis_T]
+```
+:::
+
+:::
+
+
+
+```{ojs}
+//| fig-align: center
+
+{
+  const svg = d3.select(DOM.svg(500, 250))
+    
+  svg.selectAll("circle")
+    .data(current_state.particles)
+    .join("circle")
+    .attr("cy", (_,i) => Math.floor(i / 100) * 2.5 + 2.5)
+    .attr("cx", (_,i) => i % 100 * 5 + 2.5)
+    .attr("r", 1)
+    .style("fill", d => d.state == "A" ? "purple" : "greenyellow");
+    
+    return svg.node(); 
+}
+```
+
+```{ojs}
+//| fig-align: center
+
+Plot.plot({
+  height: 200,
+  width: 500,
+  marks: [
+    Plot.line(states, {x: "Time", y: "fraction_A"}),
+    Plot.ruleX(current_state.Time),
+    Plot.ruleY(current_state.fraction_A),
+    ],
+  y: {domain: [0, 10000]}
+})
+```
+
+
+
+## Why am I doing this?
+I found kinetics a bit hard to grasp when taught it through lectures, and I know other people did too. I could do the calculations just fine, but I didn't build a good intuition until I was building my own models for my PhD. I want to build a set of learning tools to help people build intuitions. I believe having toys with knobs and dials to play with is a great way to build these. This is the simplest example of kinetics there is, so it's where I'm starting.
+
+## How does it work?
+This uses the integral form of the rate equation. You can find how to get to it [here](https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Supplemental_Modules_(Physical_and_Theoretical_Chemistry)/Kinetics/02%3A_Reaction_Rates/2.03%3A_First-Order_Reactions).
+
+For a particle in state A, there is a chance that in a time period ($\delta t$) that it will react and change to state B ($P(transition)$). The faster the rate coefficient, the more likely it is to happen. In fact, this probability is
+$$P(transition) = 1 - e^{-k \delta t}$$
+
+So we start with an array of 10,000 particles in state A. Each time step, we generate 10,000 random numbers. If the number matching a particle of A is greater than $P(transition)$, the particle is now in state B.
+```{ojs}
+states = {
+  let deltaTime = .04;
+  let simulationTime = 10;
+  let numberOfParticles = 10000;
+
+  // Initialize the grid of particles
+  let particles = Array.from({ length: numberOfParticles }, () => ({ state: 'A' }));
+
+  // Create a function to calculate discrete probability
+  function calculateProbability(deltaTime, rateConstant) {
+    return 1 - Math.exp(-rateConstant * deltaTime);
+  }
+
+  // Function to update particle states based on probability
+  function updateParticleStates(particles, probability) {
+    particles.forEach((particle) => {
+      if (Math.random() < probability) {
+        particle.state = 'B';
+      }
+    });
+  }
+  let states = [];
+  for (let time = 0; time <= simulationTime; time += deltaTime) {
+    // Calculate discrete probability
+    const probability = calculateProbability(deltaTime, rateConstant);
+
+    // Update particle states based on probability
+    updateParticleStates(particles, probability);
+    // This is the source of the bug that actually took most of the time writing this code.
+    // I was trying to plot the state of the particles at any given time but ended up displaying the last time point. Turns out, even a shallow copy wasn't enough, and I needed to do this silliness.
+    const particlesCopy = JSON.parse(JSON.stringify(particles));
+    // Visualize or log the current state of the particles
+    states.push({Time: time, particles: particlesCopy, fraction_A: particles.filter(particle => particle.state == "A").length})
+  }
+  return states
+}
+```
