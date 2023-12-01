@@ -90,8 +90,8 @@ I found kinetics a bit hard to grasp when taught it through lectures, and I know
 ## How does it work?
 This uses the integral form of the rate equation. You can find how to get to it [here](https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Supplemental_Modules_(Physical_and_Theoretical_Chemistry)/Kinetics/02%3A_Reaction_Rates/2.03%3A_First-Order_Reactions).
 
-For a particle in state A, there is a chance that in a time period ($\delta t$) that it will react and change to state B ($P(transition)$). The faster the rate coefficient, the more likely it is to happen. In fact, this probability is
-$$P(transition) = 1 - e^{-k \delta t}$$
+For a particle in state A, there is a chance that in a time period ($\Delta t$) that it will react and change to state B ($P(transition)$). The faster the rate coefficient, the more likely it is to happen. In fact, this probability is
+$$P(transition) = 1 - e^{-k \Delta t}$$
 
 So we start with an array of 10,000 particles in state A. Each time step, we generate 10,000 random numbers. If the number matching a particle of A is greater than $P(transition)$, the particle is now in state B.
 ```{ojs}

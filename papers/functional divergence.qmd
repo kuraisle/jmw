@@ -11,12 +11,16 @@ The ABCG family of mammalian ATP-binding cassete proteins has five members with 
 
 | | | |
 |---|---|---|
-| ABCG1 | Cholesterol transport | Homodimer, but will dimerize with |
-| ABCG2 | Multidrug transport | Homodimer, but will dimerize with |
-| ABCG4 | Cholesterol transport | Homodimer, but will dimerize with |
+| ABCG1 | Cholesterol transport | Homodimer, but will dimerize with ABCG4 |
+| ABCG2 | Multidrug transport | Homodimer |
+| ABCG4 | Cholesterol transport | Homodimer, but will dimerize with ABCG1 |
 | ABCG5 | Bile acid transport | Obligate heterodimer with ABCG8 |
 | ABCG8 | Bile acid transport | Obligate heterodimer with ABCG5 |
 
 The difference I'm most interested in is that most of the family binds a pretty narrow category of molecules: sterol-like lipids. ABCG2, which I was working on at the time, transports a wide range of different molecules, which we call a broad substrate specificity. 
+
+There are several available methods for analysing "functional divergence": a difference in the sequences between members of a protein family. I had a particular goal, however, which wasn't well served by existing methods. I wanted to see if there were differences between the members on different levels of comparison. One level was looking at the differences between ABCG2 (broad substrate specificity) and the other members. Another was between each member of the family. I ended up getting every protein sequence for ABCG proteins in mammals (as the function of, for example, bird ABCGs is less well characterized), and designing a method based on information theory to make the comparisons.
+
+This was a fun project because I had the idea, devised the method end-to-end, and published the paper in pretty short order. I also had a fun time making a little web app that lets someone interested explore the conclusions interactively. It also pointed to some interesting directions for experiments, though we didn't have time to develop the methods it would require.
 
 [DOI:10.3390/ijms22063012](https://doi.org/10.3390/ijms22063012)

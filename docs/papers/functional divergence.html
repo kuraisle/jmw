@@ -142,21 +142,26 @@ ul.task-list li input[type="checkbox"] {
 
 <p>While I was helping to write <a href="../papers/ABCG review.html">this review</a>, I was given a section to write looking at the sequence differences between ABCG2 and ABCG5/G8. Normally I would just have aligned the sequences, had a look at some likely spots for functional differences and left it there. As it was lockdown, I had the time to think about the question more deeply. If you just align two sequences, any differences you see might just be normal, random variation. However, if you align a lot of sequences, you can start to make better inferences about what the differences might mean. The ABCG family of mammalian ATP-binding cassete proteins has five members with different functions.</p>
 <table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
 <tbody>
 <tr class="odd">
 <td>ABCG1</td>
 <td>Cholesterol transport</td>
-<td>Homodimer, but will dimerize with</td>
+<td>Homodimer, but will dimerize with ABCG4</td>
 </tr>
 <tr class="even">
 <td>ABCG2</td>
 <td>Multidrug transport</td>
-<td>Homodimer, but will dimerize with</td>
+<td>Homodimer</td>
 </tr>
 <tr class="odd">
 <td>ABCG4</td>
 <td>Cholesterol transport</td>
-<td>Homodimer, but will dimerize with</td>
+<td>Homodimer, but will dimerize with ABCG1</td>
 </tr>
 <tr class="even">
 <td>ABCG5</td>
@@ -171,6 +176,8 @@ ul.task-list li input[type="checkbox"] {
 </tbody>
 </table>
 <p>The difference I’m most interested in is that most of the family binds a pretty narrow category of molecules: sterol-like lipids. ABCG2, which I was working on at the time, transports a wide range of different molecules, which we call a broad substrate specificity.</p>
+<p>There are several available methods for analysing “functional divergence”: a difference in the sequences between members of a protein family. I had a particular goal, however, which wasn’t well served by existing methods. I wanted to see if there were differences between the members on different levels of comparison. One level was looking at the differences between ABCG2 (broad substrate specificity) and the other members. Another was between each member of the family. I ended up getting every protein sequence for ABCG proteins in mammals (as the function of, for example, bird ABCGs is less well characterized), and designing a method based on information theory to make the comparisons.</p>
+<p>This was a fun project because I had the idea, devised the method end-to-end, and published the paper in pretty short order. I also had a fun time making a little web app that lets someone interested explore the conclusions interactively. It also pointed to some interesting directions for experiments, though we didn’t have time to develop the methods it would require.</p>
 <p><a href="https://doi.org/10.3390/ijms22063012">DOI:10.3390/ijms22063012</a></p>
 
 
