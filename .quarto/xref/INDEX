@@ -67,5 +67,8 @@
   },
   "data-analysis/first_order_kinetics.qmd": {
     "first_order_kinetics.html": "4db92e04"
+  },
+  "data-analysis/prison_map.qmd": {
+    "prison_map.html": "56282cb2"
   }
 }

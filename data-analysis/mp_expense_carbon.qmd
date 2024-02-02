@@ -4,6 +4,7 @@ format:
   html:
     code-fold: true
     code-summary: "Show the code"
+    echo: true
 description: An examination of how large the carbon footprint of UK MPs is, if you only look at the travel that they claim on their expenses.
 date-format: iso
 date: 2023-11-27
@@ -15,79 +16,102 @@ date: 2023-11-27
 Here we're going to look at the carbon footprint of the travel UK Members of Parliament (MPs) have put on their expenses. First, we will get the data for MPs' expenses from [IPSA](https://www.theipsa.org.uk/). I'll be looking at the data from the year 2022-2023, as this is the last complete year of data as of 21/11/2023.
 
 Here are the top 30 spenders, by the amount paid for their travel.
-```{python}
-import pandas as pd
-import matplotlib.pyplot as plt
 
-mp_data: pd.DataFrame = pd.read_csv("data/individualBusinessCosts_22_23.csv", low_memory=False)
-travel_tags: list[str] = ['Dependant Travel', 'MP Travel', 'Staff Travel']
-travel_data: pd.DataFrame = mp_data[mp_data['Category'].isin(travel_tags)][['Name', 'Category', 'Cost Type', 'Short Description', 'Details', 'Journey Type', 'From', 'To', 'Travel', 'Nights', 'Mileage', 'Amount Claimed', 'Amount Paid', 'Amount Not Paid', 'Amount Repaid']]
-total_paid = travel_data[['Name', 'Amount Paid']].groupby('Name').sum().sort_values(by='Amount Paid', ascending=False)
-
-fig, ax = plt.subplots(figsize = [8,8])
-total_paid.iloc[:30].plot(kind='bar', ax=ax)
-plt.ylabel("Total Travel Expenses (£)")
-plt.xticks(rotation = 60, ha = "right")
-plt.legend([],[])
-plt.show()
+```{ojs}
+data = await FileAttachment("data/individualBusinessCosts_22_23.csv").csv({typed:true});
+travel_tags = ['Dependant Travel', 'MP Travel', 'Staff Travel'];
+travel_data = data
+  .filter((expense) => {
+    return travel_tags.includes(expense.Category)
+  })
+  .map((expense) => {
+      return {Name: expense.Name, "Amount Claimed": expense['Amount Claimed'], 'Cost Type': expense['Cost Type'] }
+      });
+total_travel = travel_data.reduce((acc, current) => {
+  const existing = acc.find(item => item.Name === current.Name);
+   if (existing) {
+     existing.TotalClaimed += current["Amount Claimed"];
+   } else {
+     acc.push({ Name: current.Name, TotalClaimed: current["Amount Claimed"] });
+   }
+   return acc;
+  }, [])
+  .sort(
+    (a, b) => b.TotalClaimed-a.TotalClaimed
+  );
+travel_biggest_spenders = total_travel.slice(0, 30).map((spender) => spender.Name);
+big_spenders_by_type = travel_data
+  .filter((expense) => travel_biggest_spenders.includes(expense.Name))
+  .reduce(
+    (acc, current) => {
+      const existing = acc.find(item => item.Name === current.Name && item['Cost Type'] === current['Cost Type']);
+      if (existing) {
+        existing['Amount Claimed'] += current['Amount Claimed']
+      } else {
+        acc.push({ Name: current.Name, 'Amount Claimed': current['Amount Claimed'], 'Cost Type': current['Cost Type']})
+      }
+    return acc;
+    }, []
+  );
 ```
-
-Phew, Steven Bonnar spent nearly £60,000 on travel.
-
-```{python}
-bonnar_cost_split = travel_data.loc[travel_data['Name'] == 'Steven Bonnar'][['Cost Type', 'Amount Paid']].groupby('Cost Type').sum()
-fig, ax = plt.subplots()
-
-ax.pie(x = bonnar_cost_split['Amount Paid'],
-       labels = bonnar_cost_split.index,
-       labeldistance=None
-    )
-ax.legend(bbox_to_anchor = (1.1, 0.8))
-
-plt.show()
+```{ojs}
+Plot.plot({
+  marginBottom:120,
+  color: {scheme: "Spectral", legend: true, width: 800, label: "Cost Type"},
+  x: { tickRotate:-60},
+  y: { grid: true },
+  marks: [ Plot.barY(big_spenders_by_type, {x:"Name", y: "Amount Claimed", fill: "Cost Type", sort: {color: "fill", x: "-y"}})]
+})
 ```
+Phew, Steven Bonnar spent nearly £60,000 on travel. A lot of this was spent on air travel. Steven Bonnar is the Scottish National Party (SNP) MP for Coatbridge, Chryston and Bellshill.
 
-A lot of this was spent on air travel. Steven Bonnar is the Scottish National Party (SNP) MP for Coatbridge, Chryston and Bellshill.
+```{ojs}
+bonnar_flights = data
+                     .filter((expense) => expense.Name === 'Steven Bonnar' && expense['Cost Type'] == 'Air travel')
+                     .map((expense) => ({ 'From': expense.From, 'To': expense.To }))
+                     .reduce((acc, current) => {
+                              const existing = acc.find(item => item.From === current.From && item.To === current.To);
+                              if (existing) {
+                                existing.Count += 1
+                              } else {
+                                acc.push({ 'From': current.From, 'To': current.To, 'Count' : 1})
+                              }
+                              return acc;
+                            }, [])
+                      .sort((a,b) =>
+                        {
+                          if (a.From < b.From) { return -1}
+                          if (a.From > b.From) { return 1 }
+                          return 0
+                        }
+                      );
 
-```{python}
-bonnar_flights = (travel_data
-    .loc[(travel_data['Name'] == 'Steven Bonnar') & (travel_data['Cost Type'] == 'Air travel')][['From', 'To']]
-    .groupby(by=['From', 'To'], group_keys='Total Flights')
-    .size()
-    .reset_index(name = 'Number of Trips')
-    )
-bonnar_flights.set_index(['From', 'To'], inplace=True)
-bonnar_flights
+Inputs.table(bonnar_flights)
 ```
-
 You can see that all of this is him flying from Glasgow, where his constituency is, to London, for Parliament.
 A Glasgow to London flight takes about an hour and a half. The train takes four and a half hours.
 
-```{python}
-pd.DataFrame({
-    'Journey': ['GLA-LCY', 'GLA-LHR', 'GLA-LGW', 'GLA-STN','Glasgow-Euston'],
-    'Vehicle': [*['Aeroplane']*4, 'Train'],
-    'Time (hours)': [1.5, 1.4, 1.6, 1.3, 4.5],
-    'Estimated CO2 (kg)': [101.2, 68.5, 81.4, 75.6, 24.57],
-    'Distance to parliament (km)': [9.5 , 16.7, 27.1, 41.2, 2.4]
-}).set_index('Journey')
+```{ojs}
+sb_flight_stats = [
+  {Journey: 'GLA-LCY', Vehicle: 'Aeroplane', 'Time (hours)': 1.5, 'Estimated CO2 (kg)': 101.2, 'Distance to\nparliament (km)': 9.5},
+  {Journey: 'GLA-LHR', Vehicle: 'Aeroplane', 'Time (hours)': 1.4, 'Estimated CO2 (kg)': 68.5, 'Distance to\nparliament (km)': 16.7},
+  {Journey: 'GLA-LGW', Vehicle: 'Aeroplane', 'Time (hours)': 1.6, 'Estimated CO2 (kg)': 81.4, 'Distance to\nparliament (km)': 27.1},
+  {Journey: 'GLA-STN', Vehicle: 'Aeroplane', 'Time (hours)': 1.3, 'Estimated CO2 (kg)': 75.6, 'Distance to\nparliament (km)': 41.2},
+  {Journey: 'Glasgow-Euston', Vehicle: 'Train', 'Time (hours)': 4.5, 'Estimated CO2 (kg)': 24.57, 'Distance to\nparliament (km)': 2.4}
+];
+Inputs.table(sb_flight_stats)
 ```
-
 Is this all fair enough then? The honourable member would save up to three hours and ten minutes per trip going by air, right? Getting through the airport takes at least an hour, though, and London Euston is a lot closer to Parliament than, for example, Stansted, shrinking the time advantage.
 
 Let's have an estimate of the carbon emissions of these trips then.
-```{python}
-bonnar_flights['Emissions per flight (kg CO2)'] = [101.2, 68.5, 75.6, 101.2, 81.4, 68.5]
-bonnar_flights['Total emissions (kg CO2)'] = bonnar_flights['Number of Trips'] * bonnar_flights['Emissions per flight (kg CO2)']
-bonnar_flights
-```
-```{python}
-#| echo: false
-from IPython.display import Markdown
-bonnar_tons = bonnar_flights['Total emissions (kg CO2)'].sum()/1000
-Markdown(
-        f"From this we can see that the total emissions from Steven Bonnar's flights is 10.3275 tons of CO<sub>2</sub>. Given an estimate of the average total emissions of a UK resident is [11.7 tons](https://www.openaccessgovernment.org/the-average-british-carbon-footprint-is-five-times-over-paris-agreement-recommendations/152669/#:~:text=Recent%20research%20finds%20that%20an,equivalent%20(tCO2e)%20per%20year.), you might wonder if it might be better to take the train."
-)
+```{ojs}
+sb_flight_counts = [72, 41, 1, 2, 0]
+sb_flight_stats_with_counts = sb_flight_stats.map((journey, index) => 
+                                                      ({'Journey': journey.Journey,
+                                                        'Count': sb_flight_counts[index],
+                                                        'Total CO2 (kg)': sb_flight_counts[index]*journey['Estimated CO2 (kg)']
+                                                      }));
+Inputs.table(sb_flight_stats_with_counts)
 ```
 
 ## The point of the exercise
@@ -97,8 +121,14 @@ All this isn't just to bash poor Steven Bonnar, against whom I have no particula
 How do you estimate emissions from travel then? For some modes of transport, it's fairly straightforward - there's a particular value per kilometre, and we assume everything else evens out.
 
 What kinds of expenses are people claiming then?
-```{python}
-pd.DataFrame(travel_data['Cost Type'].unique())
+```{ojs}
+travel_types = new Set(travel_data.map((expense) => expense['Cost Type']))
+```
+```{ojs}
+viewof test = {
+  const type_elements = [...travel_types].map((type) => html`<li>${type}</li>`)
+  return html`<ul>${type_elements}</ul>`
+}
 ```
 
 Some of these we will discard. We aren't looking at the emissions of staying in a hotel, because it would be too hard to estimate, and not meaningful to look at here. Other things like railcards and congestion charges don't have a meaningful emissions figure.

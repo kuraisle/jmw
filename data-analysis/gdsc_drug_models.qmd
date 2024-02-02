@@ -9,7 +9,7 @@ date-format: iso
 date: today
 draft: true
 execute:
-    freeze: auto
+    freeze: true
 ---
 
 ```{python}

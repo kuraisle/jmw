@@ -1,0 +1,217 @@
+---
+title: "UK Prisons"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+description: A map of the UK showing prison locations.
+date-format: iso
+date: 2024-02-02
+execute:
+  freeze: true
+---
+```{python}
+#| warning: false
+import pandas as pd
+import plotly.io as pio
+import plotly.express as px
+
+prison_df = pd.read_csv('data/prison_coordinates.csv')
+prison_df.columns = ['Prison Name', 'Capacity', 'Operator', 'Coordinates', 'latitude', 'longitude']
+
+fig = px.scatter_mapbox(
+    prison_df,
+    lat = 'latitude',
+    lon = 'longitude',
+    mapbox_style = 'carto-positron',
+    custom_data = ['Prison Name', 'Capacity', 'Operator'],
+    size = 'Capacity',
+    color = 'Operator',
+    width = 800,
+    height = 800,
+    zoom = 4.6
+)
+
+fig.update_traces(
+    hovertemplate = '<b>%{customdata[0]}</b><br>Capacity: %{customdata[1]}<br>Operator: %{customdata[2]}'
+)
+
+fig.update_mapboxes(
+    center_lat = 54,
+    center_lon= -2.5
+)
+
+fig.show()
+```
+## What are you doing?
+A friend of mine wants an interactive map of prisons for a project. I like to ~~have an excuse to play with libraries I don't know yet~~ help, so I'm going to try and make one.
+
+My friend is gathering a lot of data manually, but as a starting point, let's see what we can get from Wikipedia.
+
+## Web Scraping
+I've used Beautiful Soup to parse the html from [the Wikipedia list of prisons in the UK](https://en.wikipedia.org/wiki/List_of_prisons_in_the_United_Kingdom). To be a good neighbour, I'm not actually running the code from this each time.
+```{python}
+#| eval: false
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import re
+
+url = "https://en.wikipedia.org/wiki/List_of_prisons_in_the_United_Kingdom"
+response = requests.get(url)
+response.raise_for_status()
+
+soup = BeautifulSoup(response.content, 'html.parser')
+```
+This page has seven tables in. I've extracted each of these as a pandas DataFrame.
+```{python}
+#| eval: false
+
+tables = soup.find_all('table')
+
+data_from_tables = []
+
+for table in tables:
+    rows = table.find_all('tr')
+
+    header = rows[0]
+    row_cells = header.find_all('th')
+    row_titles = [cell.text.strip() for cell in row_cells]
+
+    table_data = dict([(title, []) for title in row_titles])
+    table_data['url'] = []
+    
+    for row in rows[1:]:
+        cells = row.find_all('td')
+
+        # Get the URL and Name field
+        name_cell = cells[0]
+        name_link = name_cell.find('a')
+
+        if name_link:
+            prison_url = name_link['href']
+        else:
+            prison_url = 'No URL'
+
+        table_data['url'].append(prison_url)
+        for i in range(0, len(row_titles)):  
+            if i > len(cells):  # If there's no matching cell in this row
+                table_data[row_titles[i]].append('')  # Append empty field
+            else:
+                table_data[row_titles[i-1]].append(cells[i-1].text.strip())
+
+    # Store the extracted data
+    try:
+        data_from_tables.append(pd.DataFrame(table_data))
+    except:
+        data_from_tables.append(table_data)
+```
+
+ As well as taking the text from each cell, I've taken the URL for each prison's page, and used that to extract the co-ordinates for each. There's a little helper in there to parse the degrees, minutes, and seconds into numeric values.
+
+```{python}
+#| eval: false
+def parse_coordinates(coord_string):
+    if '.' in coord_string:
+        l_number = int(coord_string.split('°')[0])
+    else:
+        nums = re.findall(r"\d+", coord_string)
+        l_number = 0
+        for i, num in enumerate(nums):
+            l_number += int(num)/60**i
+    if 'W' in coord_string or 'S' in coord_string:
+        return -l_number
+    else:
+        return l_number
+
+def extract_coordinates(prison_url):
+    """Extracts latitude and longitude from a prison's Wikipedia page."""
+
+    try:
+        prison_response = requests.get("https://en.wikipedia.org" + prison_url)
+        prison_response.raise_for_status()
+
+        prison_soup = BeautifulSoup(prison_response.content, 'html.parser')
+
+        latitude = prison_soup.find('span', class_ = 'latitude').get_text()
+        longitude = prison_soup.find('span', class_ = 'longitude').get_text()
+        
+        return parse_coordinates(latitude), parse_coordinates(longitude)
+
+    except Exception as e:
+        print(f"Error getting coordinates for {prison_url}: {e}") 
+
+    return 'NaN', 'NaN'  # Return NaN if coordinates are not found
+
+for df in data_from_tables:
+    coords_list = []
+    for url in df['url']:
+        latitude, longitude = extract_coordinates(url)
+        coords_list.append((latitude, longitude))
+
+    df['Coordinates'] = coords_list
+```
+
+I then named these tables as on the Wikipedia page.
+
+```{python}
+#| eval: false
+table_names = [
+    "Current England and Wales Prisons",
+    "Former England and Wales Prisons",
+    "Current Northern Ireland Prisons",
+    "Former Northern Ireland Prisons",
+    "Current Scottish Prisons",
+    "Former Scottish Prisons",
+    "Future Prisons"
+]
+tables = dict([(table_names[i], data_from_tables[i]) for i in range(7)])
+```
+## Data cleaning
+
+I then did some clean-up:
+
+1. Prisons run by HMP are blank rows in the table of current prisons in England and Wales, so I filled that
+2. I had to rename the prisons in Northern Ireland. I didn't bother doing it programmatically because there are only four
+3. Northern Ireland prisons are run by the Department of Justice NI, which I filled into
+4. I had to manually find the capacities of the Scottish prisons, and use the information in the notes to fill in the operator
+
+```{python}
+#| eval: false
+
+tables['Current England and Wales Prisons']['Operator'].fillna('HMP', inplace = True)
+tables['Current Northern Ireland Prisons'].index = ['HMP Maghaberry', 'HMP Magilligan', 'HMP Hydebank Wood', 'Woodlands JJC']
+tables['Current Northern Ireland Prisons']['Operator'] = [*['Department of Justice NI']*3 , 'Unknown']
+scottish_capacities = [700, 1600, 285, 117, 200, 872, 670, 560, 131, 110, 692, 884, 670, 760, 553]
+tables['Current Scottish Prisons']['Operator'] = 'Scottish Prison Service'
+tables['Current Scottish Prisons']['Operator'].loc['Addiewell'] = 'Sodexo Justice Services'
+tables['Current Scottish Prisons']['Operator'].loc['Kilmarnock'] = 'Serco'
+tables['Current Scottish Prisons']['Capacity'] = scottish_capacities
+```
+
+Then I concatenated the tables of current prisons
+
+```{python}
+#|eval: false
+
+combo = pd.concat([
+    tables['Current England and Wales Prisons'][['Capacity', 'Operator', 'Coordinates']],
+    tables['Current Northern Ireland Prisons'][['Capacity', 'Operator', 'Coordinates']],
+    tables['Current Scottish Prisons'][['Capacity', 'Operator', 'Coordinates']]
+])
+```
+The last things to do are to
+1. Remove the citations from the `Capacity` and `Operator` columns. This turns them from e.g. `563[17]` to `563`, which lets them be parsed as numbers.
+2. Convert the coordinates from one column of both to two columns: latitude and longitude
+
+```{python}
+#|eval: false
+combo['Capacity'] = combo['Capacity'].apply(lambda x: x if type(x) == int else int(x.split("[")[0]))
+combo['Operator'] = combo['Operator'].apply(lambda x: x.split('[')[0] if '[' in x else x)
+combo['latitude'] = combo['Coordinates'].apply(lambda x: x.split(',')[0][1:])
+combo['longitude'] = combo['Coordinates'].apply(lambda x: x.split(',')[1][:-1])
+```
+
+## Plotting
+I then used plotly's scatter_mapbox to load a map from mapbox and plot the prison locations, sized by capacity and coloured by operator. Pretty neat, huh?

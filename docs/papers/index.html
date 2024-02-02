@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.361">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -47,7 +47,13 @@ ul.task-list li input[type="checkbox"] {
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -56,6 +62,7 @@ ul.task-list li input[type="checkbox"] {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -94,6 +101,33 @@ ul.task-list li input[type="checkbox"] {
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 <link rel="stylesheet" href="../styles.css">
 </head>
 
@@ -101,9 +135,9 @@ ul.task-list li input[type="checkbox"] {
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">James Mitchell-White</span>
     </a>
@@ -115,21 +149,21 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html" rel="" target="">
- <span class="menu-text">Home</span></a>
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../papers/index.html" rel="" target="" aria-current="page">
- <span class="menu-text">Papers</span></a>
+    <a class="nav-link active" href="../papers/index.html" aria-current="page"> 
+<span class="menu-text">Papers</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../data-analysis/index.html" rel="" target="">
- <span class="menu-text">Data Analysis</span></a>
+    <a class="nav-link" href="../data-analysis/index.html"> 
+<span class="menu-text">Data Analysis</span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools ms-auto">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -158,7 +192,9 @@ ul.task-list li input[type="checkbox"] {
   </div>
   
 
+
 </header>
+
 
 <p>I’ve been a biochemist for… 9 years?! Almost the first thing my undergraduate dissertation supervisor said to me was “Most of what you do in biology doesn’t work”, and he was right. Fortunately, if you stick with it and think about what you’re doing carefully, sometimes you get some of it to work, and if you’re lucky, you might even figure out why. Some of the things I’ve figured out why have been published, and here they are.</p>
 
@@ -167,225 +203,225 @@ ul.task-list li input[type="checkbox"] {
 
 <div class="quarto-listing quarto-listing-container-default" id="listing-listing">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1698361200000" data-listing-file-modified-sort="1701101123213" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1698361200000" data-listing-file-modified-sort="1704886130938" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="2">
 <div class="thumbnail">
-<p><a href="../papers/abcg2_tr-fret.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/abcg2_tr-fret.html" class="no-external"></a></p><a href="../papers/abcg2_tr-fret.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/abcg2_tr-fret.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/abcg2_tr-fret.html">
 <h3 class="no-anchor listing-title">
-A time-resolved Förster resonance energy transfer assay to investigate inhibitor binding to ABCG2 (preprint)
+<a href="../papers/abcg2_tr-fret.html" class="no-external">A time-resolved Förster resonance energy transfer assay to investigate inhibitor binding to ABCG2 (preprint)</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/abcg2_tr-fret.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>The first use of resonance in an assay to measure binding to a transmembrane transporter</p>
+<a href="../papers/abcg2_tr-fret.html" class="no-external">The first use of resonance in an assay to measure binding to a transmembrane transporter</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/abcg2_tr-fret.html">
+<a href="../papers/abcg2_tr-fret.html" class="no-external">
 <div class="listing-date">
 Oct 27, 2023
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-listing-date-sort="1656630000000" data-listing-file-modified-sort="1701442652276" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3">
+<div class="quarto-post image-right" data-index="1" data-listing-date-sort="1656630000000" data-listing-file-modified-sort="1704886130938" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="484">
 <div class="thumbnail">
-<p><a href="../papers/SMALP_methods.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/SMALP_methods.html" class="no-external"></a></p><a href="../papers/SMALP_methods.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/SMALP_methods.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/SMALP_methods.html">
 <h3 class="no-anchor listing-title">
-Detergent-Free Membrane Protein Purification Using SMA Polymer
+<a href="../papers/SMALP_methods.html" class="no-external">Detergent-Free Membrane Protein Purification Using SMA Polymer</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/SMALP_methods.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>A review of methods for resuspending membrane proteins in SMALPs</p>
+<a href="../papers/SMALP_methods.html" class="no-external">A review of methods for resuspending membrane proteins in SMALPs</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/SMALP_methods.html">
+<a href="../papers/SMALP_methods.html" class="no-external">
 <div class="listing-date">
 Jul 1, 2022
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-listing-date-sort="1615852800000" data-listing-file-modified-sort="1701442765779" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
+<div class="quarto-post image-right" data-index="2" data-listing-date-sort="1615852800000" data-listing-file-modified-sort="1704886130938" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="380">
 <div class="thumbnail">
-<p><a href="../papers/functional divergence.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/functional divergence.html" class="no-external"></a></p><a href="../papers/functional divergence.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/functional divergence.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/functional divergence.html">
 <h3 class="no-anchor listing-title">
-Analysis of sequence divergence in mammalian ABCGs predicts a structural network of residues that underlies functional divergence
+<a href="../papers/functional divergence.html" class="no-external">Analysis of sequence divergence in mammalian ABCGs predicts a structural network of residues that underlies functional divergence</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/functional divergence.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>Using information theory to explore differences in a protein family</p>
+<a href="../papers/functional divergence.html" class="no-external">Using information theory to explore differences in a protein family</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/functional divergence.html">
+<a href="../papers/functional divergence.html" class="no-external">
 <div class="listing-date">
 Mar 16, 2021
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-listing-date-sort="1601074800000" data-listing-file-modified-sort="1701082333879" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="3" data-listing-date-sort="1601074800000" data-listing-file-modified-sort="1704886130938" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="182">
 <div class="thumbnail">
-<p><a href="../papers/ABCG review.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/ABCG review.html" class="no-external"></a></p><a href="../papers/ABCG review.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/ABCG review.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/ABCG review.html">
 <h3 class="no-anchor listing-title">
-Picky ABCG5/G8 and promiscuous ABCG2‐a tale of fatty diets and drug toxicity
+<a href="../papers/ABCG review.html" class="no-external">Picky ABCG5/G8 and promiscuous ABCG2‐a tale of fatty diets and drug toxicity</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/ABCG review.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>A review of the differences between ABCG family transporters</p>
+<a href="../papers/ABCG review.html" class="no-external">A review of the differences between ABCG family transporters</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/ABCG review.html">
+<a href="../papers/ABCG review.html" class="no-external">
 <div class="listing-date">
 Sep 26, 2020
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-listing-date-sort="1601074800000" data-listing-file-modified-sort="1701441246729" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="4" data-listing-date-sort="1601074800000" data-listing-file-modified-sort="1704886130939" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="32">
 <div class="thumbnail">
-<p><a href="../papers/rhodopsin_encyclopedia.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/rhodopsin_encyclopedia.html" class="no-external"></a></p><a href="../papers/rhodopsin_encyclopedia.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/rhodopsin_encyclopedia.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/rhodopsin_encyclopedia.html">
 <h3 class="no-anchor listing-title">
-Rhodopsin and Sensory Rhodopsin II: Stability and Characterization of Unfolded Structures
+<a href="../papers/rhodopsin_encyclopedia.html" class="no-external">Rhodopsin and Sensory Rhodopsin II: Stability and Characterization of Unfolded Structures</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/rhodopsin_encyclopedia.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>An encyclopedia article on the use of opsins as models for membrane protein folding.</p>
+<a href="../papers/rhodopsin_encyclopedia.html" class="no-external">An encyclopedia article on the use of opsins as models for membrane protein folding.</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/rhodopsin_encyclopedia.html">
+<a href="../papers/rhodopsin_encyclopedia.html" class="no-external">
 <div class="listing-date">
 Sep 26, 2020
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-listing-date-sort="1562886000000" data-listing-file-modified-sort="1701157139350" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="5" data-listing-date-sort="1562886000000" data-listing-file-modified-sort="1704886130939" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="63">
 <div class="thumbnail">
-<p><a href="../papers/pSRII_nmr.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/pSRII_nmr.html" class="no-external"></a></p><a href="../papers/pSRII_nmr.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/pSRII_nmr.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/pSRII_nmr.html">
 <h3 class="no-anchor listing-title">
-Characterisation of denatured states of sensory rhodopsin II by solution-state NMR
+<a href="../papers/pSRII_nmr.html" class="no-external">Characterisation of denatured states of sensory rhodopsin II by solution-state NMR</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/pSRII_nmr.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>This paper establishes sensory rhodopsin II as a model for membrane protein folding by using NMR to measure the changes to different residues upon unfolding</p>
+<a href="../papers/pSRII_nmr.html" class="no-external">This paper establishes sensory rhodopsin II as a model for membrane protein folding by using NMR to measure the changes to different residues upon unfolding</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/pSRII_nmr.html">
+<a href="../papers/pSRII_nmr.html" class="no-external">
 <div class="listing-date">
 Jul 12, 2019
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-listing-date-sort="1558047600000" data-listing-file-modified-sort="1701092981304" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="6" data-listing-date-sort="1558047600000" data-listing-file-modified-sort="1704886130939" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="19">
 <div class="thumbnail">
-<p><a href="../papers/retinitis_pigmentosa_mutants.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/retinitis_pigmentosa_mutants.html" class="no-external"></a></p><a href="../papers/retinitis_pigmentosa_mutants.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/retinitis_pigmentosa_mutants.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/retinitis_pigmentosa_mutants.html">
 <h3 class="no-anchor listing-title">
-Comparison of the molecular properties of retinitis pigmentosa P23H and N15S amino acid replacements in rhodopsin
+<a href="../papers/retinitis_pigmentosa_mutants.html" class="no-external">Comparison of the molecular properties of retinitis pigmentosa P23H and N15S amino acid replacements in rhodopsin</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/retinitis_pigmentosa_mutants.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>Mutants of rhodopsin that destabilize it can cause diseases of vision. This compares biochemical and biophysical properties of these mutants</p>
+<a href="../papers/retinitis_pigmentosa_mutants.html" class="no-external">Mutants of rhodopsin that destabilize it can cause diseases of vision. This compares biochemical and biophysical properties of these mutants</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/retinitis_pigmentosa_mutants.html">
+<a href="../papers/retinitis_pigmentosa_mutants.html" class="no-external">
 <div class="listing-date">
 May 17, 2019
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="7" data-listing-date-sort="1545609600000" data-listing-file-modified-sort="1701100531526" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
+<div class="quarto-post image-right" data-index="7" data-listing-date-sort="1545609600000" data-listing-file-modified-sort="1704886130938" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="266">
 <div class="thumbnail">
-<p><a href="../papers/chlorin_e6.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/chlorin_e6.html" class="no-external"></a></p><a href="../papers/chlorin_e6.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/chlorin_e6.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/chlorin_e6.html">
 <h3 class="no-anchor listing-title">
-Structural and Functional Consequences of the Weak Binding of Chlorin e6 to Bovine Rhodopsin
+<a href="../papers/chlorin_e6.html" class="no-external">Structural and Functional Consequences of the Weak Binding of Chlorin e6 to Bovine Rhodopsin</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/chlorin_e6.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>Deep-sea fish use a molecule derived from chlorophyll to see into the far red. This paper explores the interaction between this molecule and rhodopsin</p>
+<a href="../papers/chlorin_e6.html" class="no-external">Deep-sea fish use a molecule derived from chlorophyll to see into the far red. This paper explores the interaction between this molecule and rhodopsin</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/chlorin_e6.html">
+<a href="../papers/chlorin_e6.html" class="no-external">
 <div class="listing-date">
 Dec 24, 2018
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="8" data-listing-date-sort="1539903600000" data-listing-file-modified-sort="1701164370398" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="8" data-listing-date-sort="1539903600000" data-listing-file-modified-sort="1704886130939" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="2">
 <div class="thumbnail">
-<p><a href="../papers/pSRII_abs.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="../papers/pSRII_abs.html" class="no-external"></a></p><a href="../papers/pSRII_abs.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="../papers/pSRII_abs.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="../papers/pSRII_abs.html">
 <h3 class="no-anchor listing-title">
-Characterization of Denatured States and Reversible Unfolding of Sensory Rhodopsin II
+<a href="../papers/pSRII_abs.html" class="no-external">Characterization of Denatured States and Reversible Unfolding of Sensory Rhodopsin II</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="../papers/pSRII_abs.html" class="no-external"></a>
 </div>
 <div class="listing-description">
-<p>Sensory rhodopsin II makes a good model for the folding of some membrane proteins. This paper uses biophysical techniques to characterize parts of its folding mechanism.</p>
+<a href="../papers/pSRII_abs.html" class="no-external">Sensory rhodopsin II makes a good model for the folding of some membrane proteins. This paper uses biophysical techniques to characterize parts of its folding mechanism.</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="../papers/pSRII_abs.html">
+<a href="../papers/pSRII_abs.html" class="no-external">
 <div class="listing-date">
 Oct 19, 2018
 </div>
@@ -476,10 +512,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -489,8 +524,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -503,6 +547,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -546,6 +709,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -571,6 +735,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -631,6 +821,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
