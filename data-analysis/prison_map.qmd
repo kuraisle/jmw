@@ -213,5 +213,7 @@ combo['latitude'] = combo['Coordinates'].apply(lambda x: x.split(',')[0][1:])
 combo['longitude'] = combo['Coordinates'].apply(lambda x: x.split(',')[1][:-1])
 ```
 
+There was a bit more manual entry I had to do just to correct some of the co-ordinates that weren't picked up by the script correctly.
+
 ## Plotting
 I then used plotly's scatter_mapbox to load a map from mapbox and plot the prison locations, sized by capacity and coloured by operator. Pretty neat, huh?
