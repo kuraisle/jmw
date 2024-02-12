@@ -5,6 +5,7 @@ format:
     code-fold: true
     code-summary: "Show the code"
 description: A map of the UK showing prison locations.
+image: static_prison_map.png
 date-format: iso
 date: 2024-02-02
 execute:

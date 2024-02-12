@@ -1,9 +1,12 @@
 ---
-title: "A time-resolved Förster resonance energy transfer assay to investigate inhibitor binding to ABCG2 (preprint)"
+title: "A time-resolved Förster resonance energy transfer assay to investigate inhibitor binding to ABCG2"
 format: html
 description: The first use of resonance in an assay to measure binding to a transmembrane transporter
 date-format: iso
-date: 2023-10-27
+image: "abcg2 tr-fret.jpg"
+date: 2023-02-12
 ---
 
-[DOI: 10.1101/2023.10.27.564323](https://doi.org/10.1101/2023.10.27.564323)
+This is the biggest paper from my postdoc at the University of Nottingham. We spent years trying to get an [FCS](https://en.wikipedia.org/wiki/Fluorescence_correlation_spectroscopy) assay working on [SMALPs](SMALP_methods.qmd) containing ABCG2. It showed promise, but kept falling short. In the end, we decided to double-check whether our fluorescent probe was behaving as it should, using a TR-FRET assay. Not only was the probe working, but the double-check assay ended up being surprisingly effective. It turned out in the end that putting ABCG2 in SMALPs interfered with the binding, so the TR-FRET assay became the primary assay we used. Refining the assay took a little while, and we had a real breakthrough about a month from the end of my contract. We also had a really limited amount of the probe available, so the last month of that job was a mad dash of trying to do as many experiments as possible while being as economical with the probe as we could.
+
+[DOI: 10.1016/j.abb.2024.109915](https://doi.org/10.1016/j.abb.2024.109915)
