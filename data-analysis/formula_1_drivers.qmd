@@ -86,6 +86,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from itables import show
 import plotly.express as px
+from matplotlib.lines import Line2D
 
 df = pd.read_csv('data/f1_driver_data.csv').drop(columns = ['Unnamed: 0', 'Race entries', 'Race starts', 'Pole positions', 'Race wins', 'Podiums', 'Fastest laps', 'Points[a]'])
 df['Driver name'] = df['Driver name'].str.replace('[\^~\*]', '', regex=True)
@@ -168,6 +169,7 @@ sns.despine()
 ax.plot(range(0, 74), winners_table['Age (years)'], color = 'red', linewidth = 2)
 ax.set_xticks(range(0, 75, 5))
 ax.set_xticklabels(range(1950, 2025, 5))
+ax.legend([Line2D([0], [0], color = 'red', lw = 2)], ["Champion's age"], frameon=False)
 plt.tight_layout()
 plt.savefig('average_f1_driver_age.png')
 ```
