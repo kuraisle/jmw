@@ -70,5 +70,8 @@
   },
   "data-analysis/prison_map.qmd": {
     "prison_map.html": "56282cb2"
+  },
+  "data-analysis/formula_1_drivers.qmd": {
+    "formula_1_drivers.html": "3939bc22"
   }
 }
