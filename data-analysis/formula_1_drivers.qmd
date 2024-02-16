@@ -15,7 +15,7 @@ execute:
 
 In this post we'll be looking at the stats of a morally grey sport which holds events in many countries with dodgy human rights records, governed by increasingly shady characters, with an untenable environmental impact. No, not that one^[I know you can read the title and know which one I'm talking about, I just love a bit]! The one British athletes are pretty good at!
 
-I grew up watching Formula 1 on a saturday with my dad, then it changed channel, BMW made [a car that looked like a walrus](https://upload.wikimedia.org/wikipedia/commons/3/38/Montoya_2004_Canada.jpg), and Michael Schumacher retired, so I lost interest. Then, like everyone else, Drive to Survive sucked me back in.
+I grew up watching Formula 1 on a Saturdays with my dad, then it changed channel, BMW made [a car that looked like a walrus](https://upload.wikimedia.org/wikipedia/commons/3/38/Montoya_2004_Canada.jpg), and Michael Schumacher retired, so I lost interest. Then, like everyone else, Drive to Survive sucked me back in.
 
 Then I started to wonder: am I just getting older or are the drivers younger than they used to be? The plot at the top shows the distribution of driver ages as a boxplot for each season, then the age of each champion as a red line. They have indeed got younger over time, though not as much as I had expected. It's quite fun to see a period of a driver's dominance where the red line is straight.
 
@@ -152,6 +152,8 @@ winners_table.sort_values('Year', inplace=True)
 show(winners_table.drop(columns = 'Championship years'))
 ```
 And here's where it's pulled together to make the plot!
+
+*Update: feedback from reddit^[thanks u/kajorge and u/BubBidderskins] was that the red was hard to see in front of the original colours, so I've changed it.*
 ```{python}
 fig, ax = plt.subplots(figsize = (8,6))
 
@@ -159,7 +161,8 @@ sns.boxplot(
   data = df_race_years[['Season', 'Age (years)']].sort_values('Season'),
   x = 'Season',
   y = 'Age (years)',
-  ax = ax
+  ax = ax,
+  palette = 'crest_r'
 )
 sns.despine()
 ax.plot(range(0, 74), winners_table['Age (years)'], color = 'red', linewidth = 2)
