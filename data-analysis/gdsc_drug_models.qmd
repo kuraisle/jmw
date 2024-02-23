@@ -7,6 +7,8 @@ format:
 description: As practice for using gradient boosted trees, I used an open dataset to use gene expression in tumours to predict resistance to chemotherapy drugs
 date-format: iso
 date: today
+categories:
+  - data analysis
 draft: true
 execute:
     freeze: true

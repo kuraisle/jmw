@@ -6,6 +6,8 @@ format:
     code-summary: "Show the code"
 image: dose_response.png
 description: A toy example of how pharmacologists determine binding coefficients using saturation binding data.
+categories:
+  - data analysis
 date-format: iso
 date: 2023-11-27
 ---

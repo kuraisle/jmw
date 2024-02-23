@@ -6,6 +6,8 @@ format:
     code-summary: "Show the code"
     echo: true
 description: An examination of how large the carbon footprint of UK MPs is, if you only look at the travel that they claim on their expenses.
+categories:
+  - data analysis
 date-format: iso
 date: 2023-11-27
 ---

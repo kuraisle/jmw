@@ -6,6 +6,8 @@ format:
     code-summary: "Show the code"
 description: Plotting the age distribution of formula 1 drivers over time
 date-format: iso
+categories:
+  - data analysis
 image: average_f1_driver_age.png
 date: 2024-02-15
 execute:
@@ -173,6 +175,17 @@ ax.legend([Line2D([0], [0], color = 'red', lw = 2)], ["Champion's age"], frameon
 plt.tight_layout()
 plt.savefig('average_f1_driver_age.png')
 ```
+There are some really old drivers early on:
+```{python}
+show(df_race_years.sort_values('Age', ascending=False).head(10))
+```
+And some born in the 1800s^[again pointed out on reddit (u/ryanllw)]
+
+```{python}
+show(df_race_years.drop(columns = ['Championships count', 'Championship years', 'Age', 'Age (years)']).sort_values('Date of Birth').head(10))
+```
+
+
 I thought it would be fun to visualize each driver's career, so I've reshaped the data so get their age each year so I can plot the age of each active driver as a line through the seasons. To make it a little easier to read, you can hover over the lines to see who's who, though for some you might be able to guess!
 ```{python}
 #| warning: false

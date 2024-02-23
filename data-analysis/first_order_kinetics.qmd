@@ -6,6 +6,8 @@ format:
         code-summary: Show the code
 description: The first step in simulating reaction kinetics
 fig-align: center
+categories:
+  - simulation
 date-format: iso
 date: 2023-11-30
 ---

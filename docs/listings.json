@@ -16,6 +16,7 @@
   {
     "listing": "/data-analysis/index.html",
     "items": [
+      "/data-analysis/confocal_volume.html",
       "/data-analysis/formula_1_drivers.html",
       "/data-analysis/prison_map.html",
       "/data-analysis/first_order_kinetics.html",

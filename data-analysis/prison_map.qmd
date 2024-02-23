@@ -7,6 +7,8 @@ format:
 description: A map of the UK showing prison locations.
 image: static_prison_map.png
 date-format: iso
+categories:
+  - data analysis
 date: 2024-02-02
 execute:
   freeze: true

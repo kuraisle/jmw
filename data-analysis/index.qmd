@@ -4,6 +4,7 @@ format: html
 listing:
     type: default
     sort: "date desc"
+    categories: true
 ---
 
 When I was writing [this review](../papers/ABCG%20review.qmd), my supervisor told the other authors to let me do the section on differences between protein sequences because "he has weird ideas", which is one of the nicest things anyone has ever said about me. Here are some weird ideas!

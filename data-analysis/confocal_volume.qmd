@@ -1,0 +1,257 @@
+---
+title: Simulating particles moving through a confocal volume
+format:
+  html:
+    code-fold: true
+    code-summary: Show the code
+description: The first step in simulating FCS
+fig-align: center
+image: basic-particle-box.png
+categories:
+  - FCS
+  - simulation
+date-format: iso
+date: 2024-02-22
+---
+
+
+```{ojs}
+renderer.domElement
+```
+
+:::{.grid}
+
+:::{.g-col-4}
+
+```{ojs}
+viewof brownianSpeed = Inputs.range([0.01, 0.5], {
+  value:0.2,
+  step:0.01,
+  label: "Speed of particles"
+})
+```
+
+:::
+
+:::{.g-col-4}
+```{ojs}
+viewof particleCount = Inputs.range([100, 1000], {
+  value: 300,
+  step: 10,
+  label: "Number of particles"
+})
+```
+
+:::
+
+:::
+
+:::{.interlocutor}
+What have you done now?
+:::
+
+Oh, hello, fictional interlocutor. This is my simulator of particles in a box!
+
+:::{.interlocutor}
+OK, and why have you simulated particles in a box?
+:::
+
+Ah, well they aren't just particles in a box. They're **moving** particles in a box.
+
+:::{.interlocutor}
+I'm really none the wiser. Are you really going to keep doing this "pretending you're talking to someone" bit?
+:::
+
+Well this is just the first step in a wider project. The aim, eventually, is to simulate fluorescence correlation spectroscopy (FCS), which I used in my postdoc. It's a tricky one to get your head around.
+
+And yeah, I'll keep the bit for now. It keeps me amused.
+
+:::{.interlocutor}
+...
+:::
+
+Anyway, I'll start by setting the basics up. I'll set up the edges of the cube I'll keep the particles in, and make the particles have a small radius.
+
+```{ojs}
+cubeSize = 10;
+particleRadius = 0.05;
+sphereRadius = 1;
+```
+
+Then I import the [three.js](https://threejs.org/) library that does all the hard work
+
+```{ojs}
+THREE = {
+  const THREE = window.THREE = await require("three@0.130.0/build/three.min.js");
+  await require("three@0.130.0/examples/js/controls/OrbitControls.js").catch(() => {});
+  return THREE;
+}
+```
+
+and point the camera into the cube from the outside.
+
+```{ojs}
+camera = {
+  const fov = 45;
+  const aspect = 1;
+  const near = 1;
+  const far = 1000;
+  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  camera.position.set(16, 16, 20)
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  return camera;
+}
+```
+
+I'll make the cube now. Showing the edges makes it easier to see how the particles are confined. To make the visual neater, I've made a small volume in which all the particles move around. If a particle leaves the box, it just enters round the other side.
+
+:::{.interlocutor}
+So you've trapped them in your box, unable to escape
+:::
+
+Are you empathizing with my particles now? Don't be silly.
+
+```{ojs}
+cube = {
+  const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+  const cubeEdges = new THREE.EdgesGeometry(geometry);
+  const cubeMaterial = new THREE.LineBasicMaterial ( { color: 0xFF3131, linewidth:2 });
+  const wireframe = new THREE.LineSegments(cubeEdges, cubeMaterial)
+  return wireframe;
+}
+```
+
+Now we get to the fun bits. Here's where I define how the particles behave. They start with a position, and then every frame, they move a little bit in a random direction. This is a sort of dumb version of how particles actually move around. Later on, I'll be looking to simulate [Brownian motion](https://en.wikipedia.org/wiki/Brownian_motion) properly, but this will do for now.
+```{ojs}
+class Particle {
+    constructor(scene, x, y, z) {
+        this.geometry = new THREE.SphereGeometry(particleRadius, 32, 32);
+        this.material = new THREE.MeshBasicMaterial({ color: 0x008081 });
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+        // Random initial position within the cube
+        this.mesh.position.set(x, y, z);
+
+        scene.add(this.mesh);
+    }
+
+    move() {
+        const deltaX = (Math.random() - 0.5) * brownianSpeed;
+        const deltaY = (Math.random() - 0.5) * brownianSpeed;
+        const deltaZ = (Math.random() - 0.5) * brownianSpeed;
+
+        this.mesh.position.x += deltaX;
+        this.mesh.position.y += deltaY;
+        this.mesh.position.z += deltaZ;
+
+        if (this.mesh.position.x < -cubeSize / 2) {
+            this.mesh.position.x = cubeSize / 2;
+        } else if (this.mesh.position.x > cubeSize / 2) {
+            this.mesh.position.x = -cubeSize / 2;
+        }
+
+        if (this.mesh.position.y < -cubeSize/2) {
+            this.mesh.position.y = cubeSize/2;
+        } else if (this.mesh.position.y > cubeSize/2) {
+            this.mesh.position.y = -cubeSize/2;
+        }
+
+        if (this.mesh.position.z < -cubeSize/2) {
+            this.mesh.position.z = cubeSize/2;
+        } else if (this.mesh.position.z > cubeSize/2) {
+            this.mesh.position.z = -cubeSize/2;
+        }
+
+        // Check if the particle is inside the yellow ellipsoid
+        const x = this.mesh.position.x;
+        const y = this.mesh.position.y;
+        const z = this.mesh.position.z;
+        const r2 = (x/1)**2 + (y/2)**2 + (z/1)**2;
+        if (r2 < 1) {
+            this.material.color.setHex(0xFF3000); // Set color to yellow
+        } else {
+            this.material.color.setHex(0x008081); // Set color to original color
+    }
+  }
+}
+
+```
+
+:::{.interlocutor}
+Ah but I've read your code, and the particles change colour sometimes. What are you trying to sneak past me?
+:::
+
+Why, what a convenient and helpful narrative device you are! You're right, they change their colour when they're within an ellipsoid of a centre. The reason I'm doing this is to work towards my FCS simulation. The way you set up an FCS experiment is with a confocal microscope. This is a very cool bit of kit that illuminates samples with a laser, then detects fluorescence that comes off the sample. The crucial thing here is that the way it's set up, only the fluorescence from the plane you want to focus on is then detected.
+
+:::{.interlocutor}
+Wrap it up, buddy
+:::
+
+Fair enough. If you want a real explanation, there's one [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6961134/)^[or just google it]. The important part is that when you use a confocal microscope, only the fluorescence within a very teeny, ellipsoid volume is detected.
+
+:::{.interlocutor}
+And this is the where you're making the particles change colour 
+:::
+
+Exactly. I've made it yellow, too, look!
+
+```{ojs}
+ellipse = {
+  const sphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32);
+  sphereGeometry.scale(1,2,1);
+  const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 , transparent: true, opacity: 0.1});
+  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  sphere.position.set(0, 0, 0);
+  return sphere;
+}
+```
+
+The magic of FCS is that if you have a low enough concentration of the fluorescent particles you want to detect, only a small number of these will be in your tiny confocal volume at any one time. As a biochemist, used to thinking about uncountable billions of particles, this was hard to adjust to. Through the power of stats, these small numbers mean that you can not only use FCS to get an accurate measurement of the concentration, but also get an estimate of how fast they're moving.
+
+:::{.interlocutor}
+Can I go now?
+:::
+
+Fine. Maybe I won't use you again.
+
+:::{.interlocutor}
+Hallelujah!
+:::
+
+FCS is a really cool family of techniques. Using it you can measure the binding of drugs to receptors, in solution and *in situ*. There are a bunch of modifications to it, and I'm hoping to work on more and better simulations until I make something useful!
+
+If you want to learn more, some former colleagues of mine wrote a nice [review of its application](https://www.sciencedirect.com/science/article/pii/S1357272522000553?via%3Dihub) to the kind of experimental systems I wanted to^[[but sadly couldn't](../papers/SMALP_methods.qmd)].
+
+```{ojs}
+renderer = {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xFFFFFF);
+  scene.add(cube);
+  scene.add(ellipse);
+  
+  const particles = new Array(particleCount)
+                          .fill()
+                          .map((_) => new Particle(
+                                                  scene,
+                                                  Math.random() * cubeSize - cubeSize / 2,
+                                                  Math.random() * cubeSize - cubeSize / 2,
+                                                  Math.random() * cubeSize - cubeSize / 2
+                                                  ));
+  const renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.setSize(600, 600);
+  renderer.setPixelRatio(devicePixelRatio);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.addEventListener("change", () => renderer.render(scene, camera));
+  invalidation.then(() => (controls.dispose(), renderer.dispose()));
+
+  function animate() {
+    requestAnimationFrame( animate );
+    particles.forEach(particle => particle.move());
+    renderer.render( scene, camera );
+  }
+  animate();
+  return renderer;
+}
+```
+
+
