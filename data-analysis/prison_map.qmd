@@ -9,6 +9,7 @@ image: static_prison_map.png
 date-format: iso
 categories:
   - data analysis
+  - prison map
 date: 2024-02-02
 execute:
   freeze: true

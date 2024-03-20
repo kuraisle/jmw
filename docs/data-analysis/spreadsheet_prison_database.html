@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-03-14">
+<meta name="description" content="In which I complain about spreadsheets, normalize a database, then make another spreadsheet">
+
+<title>James Mitchell-White - There and back again: a spreadsheets’ tale</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">James Mitchell-White</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../data-analysis/index.html"> 
+<span class="menu-text">Data Analysis</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-data" id="toc-the-data" class="nav-link active" data-scroll-target="#the-data">The Data</a></li>
+  <li><a href="#improving-the-data-model" id="toc-improving-the-data-model" class="nav-link" data-scroll-target="#improving-the-data-model">Improving the data model</a>
+  <ul class="collapse">
+  <li><a href="#room-for-improvement" id="toc-room-for-improvement" class="nav-link" data-scroll-target="#room-for-improvement">Room for improvement</a></li>
+  <li><a href="#a-better-data-model" id="toc-a-better-data-model" class="nav-link" data-scroll-target="#a-better-data-model">A better data model</a></li>
+  </ul></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">Data wrangling</a>
+  <ul class="collapse">
+  <li><a href="#sites-table" id="toc-sites-table" class="nav-link" data-scroll-target="#sites-table">Sites table</a></li>
+  <li><a href="#prisons-table" id="toc-prisons-table" class="nav-link" data-scroll-target="#prisons-table">Prisons table</a></li>
+  <li><a href="#types-table" id="toc-types-table" class="nav-link" data-scroll-target="#types-table">Types table</a></li>
+  <li><a href="#operator-table" id="toc-operator-table" class="nav-link" data-scroll-target="#operator-table">Operator table</a></li>
+  <li><a href="#capacity-table" id="toc-capacity-table" class="nav-link" data-scroll-target="#capacity-table">Capacity table</a></li>
+  </ul></li>
+  <li><a href="#what-now" id="toc-what-now" class="nav-link" data-scroll-target="#what-now">What now?</a>
+  <ul class="collapse">
+  <li><a href="#the-ideal-world" id="toc-the-ideal-world" class="nav-link" data-scroll-target="#the-ideal-world">The ideal world</a></li>
+  <li><a href="#the-real-world" id="toc-the-real-world" class="nav-link" data-scroll-target="#the-real-world">The real world</a></li>
+  </ul></li>
+  <li><a href="#back-to-a-spreadsheet" id="toc-back-to-a-spreadsheet" class="nav-link" data-scroll-target="#back-to-a-spreadsheet">Back to a spreadsheet</a>
+  <ul class="collapse">
+  <li><a href="#apps-script" id="toc-apps-script" class="nav-link" data-scroll-target="#apps-script">Apps Script</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">There and back again: a spreadsheets’ tale</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">data analysis</div>
+    <div class="quarto-category">prison map</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In which I complain about spreadsheets, normalize a database, then make another spreadsheet
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2024-03-14</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This post might count as a confession. I always complain about spreadsheets, and that the more ornate you make them the more brittle they are. Here’s how I’ve made a pretty complicated spreadsheet, and why I did it. This is quite a long one, and if you aren’t interested in hearing why I don’t think spreadsheets are the best solution to the problems they are applied to at great length, maybe give this one a miss. If you want to read some of my thought process approaching a problem, and about my gifts as a cheapskate, then please continue.</p>
+<section id="the-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-data">The Data</h2>
+<p>I’m working with a friend who’s a sociologist on an interactive map of UK prisons. In <a href="../data-analysis/prison_map.html">a previous step</a>, I scraped Wikipedia for the coordinates of each listed prison and put a dot on the map for each one. My friend also sent me a spreadsheet with a lot more information about prisons, including some that are closed. He’s also interested in immigration detention, so there’s information about removal centres etc. in there.</p>
+<p>Let’s look at the spreadsheet:</p>
+<div id="3f67a395" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>tom_df <span class="op">=</span> pd.read_excel(<span class="st">"data/Prison database.xlsb.xlsx"</span>, sheet_name<span class="op">=</span><span class="st">"eprison"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>tom_df.dropna(axis<span class="op">=</span><span class="dv">1</span>, how<span class="op">=</span><span class="st">'all'</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>tom_df.drop([<span class="st">'Column1'</span>, <span class="op">*</span>[<span class="st">'Column'</span><span class="op">+</span><span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>,<span class="dv">10</span>)]], axis <span class="op">=</span> <span class="dv">1</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>tom_df[<span class="st">'Name'</span>] <span class="op">=</span> tom_df[<span class="st">'Name'</span>].<span class="bu">str</span>.title().<span class="bu">str</span>.replace(<span class="st">' Sch'</span>, <span class="st">' SCH'</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>tom_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="137">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Prison Name</th>
+<th data-quarto-table-cell-role="th">Name</th>
+<th data-quarto-table-cell-role="th">Area</th>
+<th data-quarto-table-cell-role="th">Type</th>
+<th data-quarto-table-cell-role="th">Operator</th>
+<th data-quarto-table-cell-role="th">Opened</th>
+<th data-quarto-table-cell-role="th">Operational Capacity</th>
+<th data-quarto-table-cell-role="th">Closed</th>
+<th data-quarto-table-cell-role="th">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>ALDINE SCH</td>
+<td>Aldine</td>
+<td>NaN</td>
+<td>Secure Children's Home</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>ATKINSON UNIT SCH</td>
+<td>Atkinson Unit SCH</td>
+<td>NaN</td>
+<td>Secure Children's Home</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>AYCLIFFE SCH</td>
+<td>Aycliffe SCH</td>
+<td>NaN</td>
+<td>Secure Children's Home</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>BARTON MOSS SCH</td>
+<td>Barton Moss SCH</td>
+<td>NaN</td>
+<td>Secure Children's Home</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>BEECHFIELD SCH</td>
+<td>Beechfield SCH</td>
+<td>NaN</td>
+<td>Secure Children's Home</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>So there are some more columns here, like the prison type and capacity. I’ll merge this with my coordinate data. Then I’ll make the prison names a bit more pleasant to read by first making them title case, rather than ALL CAPS, and then make the initialisms (“SCH” for Secure Children’s Home etc.) uppercase.</p>
+<div id="a0169851" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>coordinate_df <span class="op">=</span> pd.read_csv(<span class="st">"data/prison_coordinates.csv"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>coordinate_df.rename(columns <span class="op">=</span> {<span class="st">'Unnamed: 0'</span>: <span class="st">'Name'</span>}, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>coordinate_df.drop(<span class="st">"Coordinates"</span>, axis <span class="op">=</span> <span class="dv">1</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>prison_with_coord_df <span class="op">=</span> pd.merge(left<span class="op">=</span>coordinate_df.drop(columns <span class="op">=</span> <span class="st">'Operator'</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                  right<span class="op">=</span>tom_df,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                  on<span class="op">=</span><span class="st">'Name'</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                  how<span class="op">=</span><span class="st">'outer'</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>prison_with_coord_df[<span class="st">'Prison Name'</span>] <span class="op">=</span> prison_with_coord_df[<span class="st">'Prison Name'</span>].<span class="bu">str</span>.title()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>prison_with_coord_df[<span class="st">'Prison Name'</span>] <span class="op">=</span> prison_with_coord_df[<span class="st">'Prison Name'</span>].replace({<span class="st">'Hmp'</span>: <span class="st">'HMP'</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                                                                <span class="st">' Sch'</span>: <span class="st">' SCH'</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                                                                <span class="st">'HMPYOI'</span>: <span class="st">'HMPYOI'</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                                                                <span class="st">'Yoi '</span>: <span class="st">'YOI '</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                                                                <span class="st">'Hmyoi'</span>: <span class="st">'HMYOI'</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                                                                <span class="st">'Stc'</span>: <span class="st">'STC'</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>                                                                <span class="st">'Irc'</span>: <span class="st">'IRC'</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                                                                <span class="st">"'S"</span>: <span class="st">"'s"</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                                                                }, regex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>prison_with_coord_df.loc[<span class="op">~</span>prison_with_coord_df[<span class="st">'latitude'</span>].isnull()].head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="138">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Name</th>
+<th data-quarto-table-cell-role="th">Capacity</th>
+<th data-quarto-table-cell-role="th">latitude</th>
+<th data-quarto-table-cell-role="th">longitude</th>
+<th data-quarto-table-cell-role="th">Prison Name</th>
+<th data-quarto-table-cell-role="th">Area</th>
+<th data-quarto-table-cell-role="th">Type</th>
+<th data-quarto-table-cell-role="th">Operator</th>
+<th data-quarto-table-cell-role="th">Opened</th>
+<th data-quarto-table-cell-role="th">Operational Capacity</th>
+<th data-quarto-table-cell-role="th">Closed</th>
+<th data-quarto-table-cell-role="th">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1</td>
+<td>Addiewell</td>
+<td>700.0</td>
+<td>55.846667</td>
+<td>-3.599167</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Altcourse</td>
+<td>1324.0</td>
+<td>53.461944</td>
+<td>-2.935556</td>
+<td>HMP Altcourse</td>
+<td>31.83 hectares</td>
+<td>Local adult male prison</td>
+<td>Private - G4S</td>
+<td>1997</td>
+<td>1,184 (Jan 2021)</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5</td>
+<td>Ashfield</td>
+<td>400.0</td>
+<td>51.481389</td>
+<td>-2.439722</td>
+<td>HMP Ashfield</td>
+<td>6.29 hectares</td>
+<td>Category C adult male prison</td>
+<td>Private - Serco&amp;nbsp</td>
+<td>1999</td>
+<td>412 (Jan 2021)</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>Askham Grange</td>
+<td>128.0</td>
+<td>53.925833</td>
+<td>-1.184444</td>
+<td>HMP/ YOI Askham Grange</td>
+<td>4.08 hectares</td>
+<td>Open adult female prison</td>
+<td>Public - Ministry of Justice</td>
+<td>1947</td>
+<td>128 (Jan 2021)</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">10</td>
+<td>Aylesbury</td>
+<td>443.0</td>
+<td>51.821944</td>
+<td>-0.799722</td>
+<td>HMYOI Aylesbury</td>
+<td>8.89 hectares</td>
+<td>Male closed Young Offender Institution</td>
+<td>Public - Ministry of Justice</td>
+<td>1847</td>
+<td>229 (April 2021)</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>That’s a bit nicer, isn’t it? There are still some things that aren’t ideal about this dataset.</p>
+</section>
+<section id="improving-the-data-model" class="level2">
+<h2 class="anchored" data-anchor-id="improving-the-data-model">Improving the data model</h2>
+<section id="room-for-improvement" class="level3">
+<h3 class="anchored" data-anchor-id="room-for-improvement">Room for improvement</h3>
+<div id="55b5b2c4" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>show_multiple <span class="op">=</span> prison_with_coord_df[[<span class="st">'Prison Name'</span>, <span class="st">'Operational Capacity'</span>]]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>show_multiple[<span class="st">'cap_len'</span>] <span class="op">=</span> show_multiple[<span class="st">'Operational Capacity'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: <span class="bu">len</span>(x.split(<span class="st">' '</span>)) <span class="cf">if</span> <span class="bu">type</span>(x) <span class="op">==</span> <span class="bu">str</span> <span class="cf">else</span> <span class="dv">0</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>show_multiple.sort_values(by<span class="op">=</span><span class="st">'cap_len'</span>, ascending<span class="op">=</span><span class="va">False</span>).drop(columns<span class="op">=</span>[<span class="st">'cap_len'</span>]).head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="139">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Prison Name</th>
+<th data-quarto-table-cell-role="th">Operational Capacity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">132</td>
+<td>The Marshalsea</td>
+<td>34 (1802) (with 8 wives and seven children)</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">24</td>
+<td>Brook House Immigration Removal Centre</td>
+<td>429 (June 2010), 448 (2013), 450 (2022)</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">199</td>
+<td>HMP Wellingborough</td>
+<td>525 (Aug 2003), 548 (August 2010)</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">30</td>
+<td>Campsfield House Immigration Removal Centre</td>
+<td>199 (1997), 216 (2008), 257 (2018)</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">31</td>
+<td>HMP Canterbury</td>
+<td>314 (as of August 2008)</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">72</td>
+<td>HMP Fosse Way</td>
+<td>1930 (planned in 2023)</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">157</td>
+<td>HMP/ YOI Prescoed</td>
+<td>252 (Oct 2017)</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">158</td>
+<td>HMP Preston</td>
+<td>680 (Jan 2021)</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">160</td>
+<td>HMP Ranby</td>
+<td>1032 (Jan 2021)</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">97</td>
+<td>HMP Holme House</td>
+<td>1159 (Jan 2021)</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>This is the first issue. Some columns, including the Operational Capacity, contain multiple pieces of data. The problem, of course, is that the prisons can change over time. I did try to parse this<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> and keep the structure, but the underlying problem is that a single table is insufficient to deal with the nature of prisons over time.</p>
+</section>
+<section id="a-better-data-model" class="level3">
+<h3 class="anchored" data-anchor-id="a-better-data-model">A better data model</h3>
+<p>To get things in a more reasonable format, let’s use the concept of a data model. This will let us think about what aspects of a prison we really want to capture. Here are the facts:</p>
+<ol type="1">
+<li>More than one prison can have existed on one site (e.g.&nbsp;HMP Fosse Way was built on the site of HMP Glen Parva)</li>
+<li>A prison can change capacity over time. A new wing can be added, or another closed.</li>
+<li>A prison can change operator over time. Some have been turned over to private operators, others go from being a prison to some kind of immigration detention centre and back again.</li>
+<li>A prison can change type over time. The classification of prisoner security can change, or the age or gender of inmates can change</li>
+</ol>
+<p>This means we can represent our data like this:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">erDiagram
+  SITES ||--o{ PRISONS : contains
+  SITES {
+    int site_id
+    string site_name
+    float latitude
+    float longitude
+    float area
+  }
+  PRISONS {
+    int prison_id
+    string prison_name
+    int site_id
+  }
+  PRISONS ||--o{ TYPES : has
+  TYPES {
+    int prison_id
+    string type
+    date start_date
+    date end_date
+  }
+  OPERATOR_DATES }o--|| PRISONS : operates
+  OPERATOR_DATES {
+    int operation_id
+    string operator
+    int prison_id
+    date start_date
+    date end_date
+  }
+  PRISONS ||--o{ CAPACITIES : has
+  CAPACITIES {
+    int capacity_id
+    int prison_id
+    int operational_capacity
+    date start_date
+    date end_date
+  }
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Here we have split one table into multiple tables. This allows each prison to be represented once in the prisons table, and the ways each prison changes over time in different ways to be represented separately. In the “Types”, “Operator Dates”, and “Capacities” tables, the prison_id field means you can relate each entry to a prison.</p>
+<p>This way of representing the data scratches an itch in my brain. In data terms, this is called a “data schema”. The original data was sort of in one too, if not consistently. This particular schema is quite simple, and known as a star schema. In this terminology, the prisons table is a fact table, and the others are dimension tables. I could further split these up so the dimension tables had further dimensions off these, but I think for this relatively small dataset, this is sufficient.</p>
+<p>Using the star schema we can capture the ways a prison can change over time independently (even if changes often occur together) in a reliable way.</p>
+</section>
+</section>
+<section id="data-wrangling" class="level2">
+<h2 class="anchored" data-anchor-id="data-wrangling">Data wrangling</h2>
+<p>So how do we move from the “flat” table in the spreadsheet to the star schema?</p>
+<section id="sites-table" class="level3">
+<h3 class="anchored" data-anchor-id="sites-table">Sites table</h3>
+<p>The first thing to do is to make an entry for each site. In the current data, there are only two prisons that share a site, but I suspect as data is added we may well find more.</p>
+<div id="1aa498c5" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>site_df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'site_name'</span>: prison_with_coord_df[<span class="st">'Name'</span>].unique()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>site_df <span class="op">=</span> site_df.merge(prison_with_coord_df[[<span class="st">'Name'</span>, <span class="st">'Area'</span>, <span class="st">'latitude'</span>, <span class="st">'longitude'</span>]], left_on<span class="op">=</span><span class="st">'site_name'</span>, right_on<span class="op">=</span><span class="st">'Name'</span>).drop(columns<span class="op">=</span><span class="st">'Name'</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>site_df[<span class="st">'area'</span>] <span class="op">=</span> site_df[<span class="st">'Area'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: <span class="bu">float</span>(x.split(<span class="st">' '</span>)[<span class="dv">0</span>]) <span class="cf">if</span> <span class="bu">type</span>(x) <span class="op">==</span> <span class="bu">str</span> <span class="cf">else</span> x)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>site_df.drop(columns<span class="op">=</span><span class="st">'Area'</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>site_df.drop_duplicates(inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>site_df[<span class="st">'site_id'</span>] <span class="op">=</span> site_df.index <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>site_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="140">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">site_name</th>
+<th data-quarto-table-cell-role="th">latitude</th>
+<th data-quarto-table-cell-role="th">longitude</th>
+<th data-quarto-table-cell-role="th">area</th>
+<th data-quarto-table-cell-role="th">site_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>Abingdon</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>Addiewell</td>
+<td>55.846667</td>
+<td>-3.599167</td>
+<td>NaN</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Aldine</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>Aldington</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Altcourse</td>
+<td>53.461944</td>
+<td>-2.935556</td>
+<td>31.83</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>I also did a simple bit of data cleaning here. The area column was given as a string with “X hectares”. As each entry was given in hectares, I’ve removed that and made it a number.</p>
+</section>
+<section id="prisons-table" class="level3">
+<h3 class="anchored" data-anchor-id="prisons-table">Prisons table</h3>
+<p>The central table of the schema is pretty simple. All I’ve done here is take the prison name, added a column to generate a prison ID for the rest of the tables, then joined it with the sites table so we can find the site it was built on.</p>
+<div id="17cce9b3" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>prisons_df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'prison_name'</span>: prison_with_coord_df[<span class="st">'Prison Name'</span>],</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'site'</span>: prison_with_coord_df[<span class="st">'Name'</span>]</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>prisons_df <span class="op">=</span> prisons_df.merge(site_df[[<span class="st">'site_name'</span>, <span class="st">'site_id'</span>]], left_on <span class="op">=</span> <span class="st">'site'</span>, right_on <span class="op">=</span> <span class="st">'site_name'</span>).drop(columns<span class="op">=</span>[<span class="st">'site'</span>, <span class="st">'site_name'</span>])</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>prisons_df[<span class="st">'prison_id'</span>] <span class="op">=</span> prisons_df.index<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>prisons_df.dropna(inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>prisons_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="141">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">prison_name</th>
+<th data-quarto-table-cell-role="th">site_id</th>
+<th data-quarto-table-cell-role="th">prison_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>HMP Abingdon</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Aldine SCH</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3</td>
+<td>HMP Aldington</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4</td>
+<td>HMP Altcourse</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5</td>
+<td>HMP Ashfield</td>
+<td>6</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="types-table" class="level3">
+<h3 class="anchored" data-anchor-id="types-table">Types table</h3>
+<p>Making this dimension table is pretty simple too. This is only true because the complexity prison histories isn’t held in this dataset!</p>
+<div id="109cd253" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>types_df <span class="op">=</span> prison_with_coord_df[[<span class="st">'Prison Name'</span>, <span class="st">'Type'</span>, <span class="st">'Opened'</span>, <span class="st">'Closed'</span>]]</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>types_df.columns <span class="op">=</span> [<span class="st">'prison_name'</span>, <span class="st">'prison_type'</span>, <span class="st">'start_date'</span>, <span class="st">'end_date'</span>]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>types_df <span class="op">=</span> types_df.merge(prisons_df, on <span class="op">=</span> <span class="st">'prison_name'</span>).drop(columns<span class="op">=</span>[<span class="st">'prison_name'</span>, <span class="st">'site_id'</span>])</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>types_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="142">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">prison_type</th>
+<th data-quarto-table-cell-role="th">start_date</th>
+<th data-quarto-table-cell-role="th">end_date</th>
+<th data-quarto-table-cell-role="th">prison_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>NaN</td>
+<td>1811</td>
+<td>1868.0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>Secure Children's Home</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Category C adult male prison</td>
+<td>1947</td>
+<td>1999.0</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>Local adult male prison</td>
+<td>1997</td>
+<td>NaN</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Category C adult male prison</td>
+<td>1999</td>
+<td>NaN</td>
+<td>6</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">176</td>
+<td>Local adult male prison</td>
+<td>1849</td>
+<td>NaN</td>
+<td>205</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">177</td>
+<td>Core local adult male prison</td>
+<td>1992</td>
+<td>NaN</td>
+<td>206</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">178</td>
+<td>Local adult male prison</td>
+<td>1891</td>
+<td>NaN</td>
+<td>208</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">179</td>
+<td>Category C adult male prison</td>
+<td>1979</td>
+<td>NaN</td>
+<td>209</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">180</td>
+<td>Immigration Removal Centre</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>210</td>
+</tr>
+</tbody>
+</table>
+
+<p>181 rows × 4 columns</p>
+</div>
+</div>
+</div>
+<p>There’s no data in the original about how the types changed over time, exept sporadically in notes. For example, HMP Morton Hall has changed type at least five times since 1985, but this isn’t captured. For now, I’m just taking the type provided and pretending that has been the type for the history of the prison. In a later stage, the histories will be captured more fully. I’ll also restrict the possible values for type, as there are defined types a prison can have, and the type column in the spreadsheet isn’t consistent with this. For now, this will do.</p>
+</section>
+<section id="operator-table" class="level3">
+<h3 class="anchored" data-anchor-id="operator-table">Operator table</h3>
+<p>This one isn’t hard either, and just needs a bit of cleaning</p>
+<div id="55490f9b" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>operator_df <span class="op">=</span> prison_with_coord_df[[<span class="st">'Prison Name'</span>, <span class="st">'Operator'</span>, <span class="st">'Opened'</span>, <span class="st">'Closed'</span>]]</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>operator_df.columns <span class="op">=</span> [<span class="st">'prison_name'</span>, <span class="st">'operator'</span>, <span class="st">'start_date'</span>, <span class="st">'end_date'</span>]</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>operator_df[<span class="st">'operator'</span>] <span class="op">=</span> operator_df[<span class="st">'operator'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: x.split(<span class="st">'- '</span>)[<span class="dv">1</span>] <span class="cf">if</span> <span class="bu">type</span>(x) <span class="op">==</span> <span class="bu">str</span> <span class="kw">and</span> <span class="bu">len</span>(x.split(<span class="st">'- '</span>)) <span class="op">&gt;</span> <span class="dv">1</span> <span class="cf">else</span> x)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>operator_df[<span class="st">'operator'</span>] <span class="op">=</span> operator_df[<span class="st">'operator'</span>].replace({<span class="st">'Ministry of Justice'</span>: <span class="st">'His Majesty</span><span class="ch">\'</span><span class="st">s Prison Service'</span>, <span class="st">'Serco&amp;nbsp'</span>:<span class="st">'Serco'</span>})</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>operator_df <span class="op">=</span> operator_df.merge(prisons_df[[<span class="st">'prison_name'</span>, <span class="st">'prison_id'</span>]], on<span class="op">=</span><span class="st">'prison_name'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>operator_df[<span class="st">'operation_id'</span>] <span class="op">=</span> operator_df.index<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>operator_df <span class="op">=</span> operator_df.loc[<span class="op">~</span>operator_df[<span class="st">'prison_name'</span>].isnull()].drop(columns<span class="op">=</span>[<span class="st">'prison_name'</span>])</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>operator_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="143">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">operator</th>
+<th data-quarto-table-cell-role="th">start_date</th>
+<th data-quarto-table-cell-role="th">end_date</th>
+<th data-quarto-table-cell-role="th">prison_id</th>
+<th data-quarto-table-cell-role="th">operation_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>NaN</td>
+<td>1811</td>
+<td>1868.0</td>
+<td>1.0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>3.0</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3</td>
+<td>His Majesty's Prison Service</td>
+<td>1947</td>
+<td>1999.0</td>
+<td>4.0</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4</td>
+<td>G4S</td>
+<td>1997</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5</td>
+<td>Serco</td>
+<td>1999</td>
+<td>NaN</td>
+<td>6.0</td>
+<td>6</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">204</td>
+<td>His Majesty's Prison Service</td>
+<td>1849</td>
+<td>NaN</td>
+<td>205.0</td>
+<td>205</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">205</td>
+<td>His Majesty's Prison Service</td>
+<td>1992</td>
+<td>NaN</td>
+<td>206.0</td>
+<td>206</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">207</td>
+<td>His Majesty's Prison Service</td>
+<td>1891</td>
+<td>NaN</td>
+<td>208.0</td>
+<td>208</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">208</td>
+<td>His Majesty's Prison Service</td>
+<td>1979</td>
+<td>NaN</td>
+<td>209.0</td>
+<td>209</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">209</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>210.0</td>
+<td>210</td>
+</tr>
+</tbody>
+</table>
+
+<p>181 rows × 5 columns</p>
+</div>
+</div>
+</div>
+<p>The main thing here is that whether the prison was privately or publicly owned was included in the column. I’ve removed this, then have done some tidying. I later had to go through manually and correct some spelling mistakes. Some stuff is easier not to bother programming in.</p>
+<p>This presents an opportunity to show the strengths of making a more complex schema. If we wanted to keep track whether a prison was privately or publicly operated, we could add another table to the model to represent this.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">erDiagram
+  SITES ||--o{ PRISONS : contains
+  SITES {
+    int site_id
+    string site_name
+    float latitude
+    float longitude
+    float area
+  }
+  PRISONS {
+    int prison_id
+    string prison_name
+    int site_id
+  }
+  PRISONS ||--o{ TYPES : has
+  TYPES {
+    int prison_id
+    string type
+    date start_date
+    date end_date
+  }
+  OPERATOR_DATES }o--|| PRISONS : operates
+  OPERATOR_DATES {
+    int operation_id
+    string operator
+    int prison_id
+    date start_date
+    date end_date
+  }
+  PRISONS ||--o{ CAPACITIES : has
+  CAPACITIES {
+    int capacity_id
+    int prison_id
+    int operational_capacity
+    date start_date
+    date end_date
+  }
+  OPERATOR_TYPE ||--o{ OPERATOR_DATES : public
+  OPERATOR_TYPE {
+    string operator
+    bool public
+  }
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>I’m not doing this for now, as there are not many operators and the purpose of the model doesn’t require it.</p>
+</section>
+<section id="capacity-table" class="level3">
+<h3 class="anchored" data-anchor-id="capacity-table">Capacity table</h3>
+<p>This might be the messiest one. We do have multiple pieces of data, as we’ve seen above. What I’m doing for now is pretending each prison hasn’t changed over time, and this is mostly because the dates provided are mostly when a capacity was recorded, not when the change happened. Unfortunately for my sociologist friend, this is going to mean a lot of digging and manual data entry, unless we find a new data source!</p>
+<div id="7a984fa1" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>capacities_df <span class="op">=</span> prison_with_coord_df[[<span class="st">'Prison Name'</span>, <span class="st">'Operational Capacity'</span>, <span class="st">'Opened'</span>, <span class="st">'Closed'</span>]]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>capacities_df.columns <span class="op">=</span> [<span class="st">'prison_name'</span>, <span class="st">'operational_capacity'</span>, <span class="st">'start_date'</span>, <span class="st">'end_date'</span>]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>capacities_df <span class="op">=</span> capacities_df.merge(prisons_df, on<span class="op">=</span><span class="st">'prison_name'</span>, how<span class="op">=</span><span class="st">'left'</span>).drop(columns<span class="op">=</span>[<span class="st">'prison_name'</span>, <span class="st">'site_id'</span>])</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>capacities_df[<span class="st">'operational_capacity'</span>] <span class="op">=</span> capacities_df[<span class="st">'operational_capacity'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: x.split(<span class="st">' '</span>)[<span class="dv">0</span>] <span class="cf">if</span> <span class="bu">type</span>(x) <span class="op">==</span> <span class="bu">str</span> <span class="cf">else</span> x)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>capacities_df[<span class="st">'operational_capacity'</span>] <span class="op">=</span> capacities_df[<span class="st">'operational_capacity'</span>].<span class="bu">str</span>.replace(<span class="vs">r'[^1-9]'</span>,<span class="st">''</span>, regex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>capacities_df[<span class="st">'operational_capacity'</span>] <span class="op">=</span> capacities_df[<span class="st">'operational_capacity'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: <span class="bu">int</span>(x) <span class="cf">if</span> <span class="bu">type</span>(x) <span class="op">==</span> <span class="bu">str</span> <span class="kw">and</span> <span class="bu">len</span>(x) <span class="op">&gt;</span> <span class="dv">0</span> <span class="cf">else</span> <span class="va">None</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>capacities_df[<span class="st">'capacity_id'</span>] <span class="op">=</span> capacities_df.index<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>capacities_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="144">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">operational_capacity</th>
+<th data-quarto-table-cell-role="th">start_date</th>
+<th data-quarto-table-cell-role="th">end_date</th>
+<th data-quarto-table-cell-role="th">prison_id</th>
+<th data-quarto-table-cell-role="th">capacity_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>NaN</td>
+<td>1811</td>
+<td>1868.0</td>
+<td>1.0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>3.0</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>NaN</td>
+<td>1947</td>
+<td>1999.0</td>
+<td>4.0</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1184.0</td>
+<td>1997</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">205</td>
+<td>535.0</td>
+<td>1992</td>
+<td>NaN</td>
+<td>206.0</td>
+<td>206</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">206</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>207</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">207</td>
+<td>115.0</td>
+<td>1891</td>
+<td>NaN</td>
+<td>208.0</td>
+<td>208</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">208</td>
+<td>12.0</td>
+<td>1979</td>
+<td>NaN</td>
+<td>209.0</td>
+<td>209</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">209</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>210.0</td>
+<td>210</td>
+</tr>
+</tbody>
+</table>
+
+<p>210 rows × 5 columns</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="what-now" class="level2">
+<h2 class="anchored" data-anchor-id="what-now">What now?</h2>
+<p>We have the data in the tables as required, with the relationships between tables established.</p>
+<section id="the-ideal-world" class="level3">
+<h3 class="anchored" data-anchor-id="the-ideal-world">The ideal world</h3>
+<p>What we have here is a great case for using a relational database. Relational Database Management Systems are well-established pieces of software that make it easy for you to add entries to a system like this while maintaining data integrity, and have guard rails in place to stop you from doing something that breaks your system.</p>
+</section>
+<section id="the-real-world" class="level3">
+<h3 class="anchored" data-anchor-id="the-real-world">The real world</h3>
+<p>More important than protecting users from themselves, and providing a convenient interface is the ability to share it with my collaborator. There are free database hosting services, but these are mostly trials, and often involve learning a proprietary system. Then I have to set up administration so that my friend can edit it and protect it from vandals. Because I am both stupid and lazy, I’m going to use a stupid and lazy solution: another spreadsheet.</p>
+</section>
+</section>
+<section id="back-to-a-spreadsheet" class="level2">
+<h2 class="anchored" data-anchor-id="back-to-a-spreadsheet">Back to a spreadsheet</h2>
+<p>Google sheets has the features I want - I can share it with my friend and Google handles authentication for me. I can mitigate some of the risks of using a spreadsheet by applying data validation rules. For example, as there are a limited set of options, I can restrict that column of the spreadsheet to only accept those options. Sheets also makes these into a snazzy drop-down menu:</p>
+<p><img src="prison_spreadsheet_images/validation_options.png" class="img-fluid"></p>
+<p>I have also made it so it shouts at you if you try to duplicate entries by adding a prison twice or trying to reuse a prison ID, for example.</p>
+<p>The difficulty comes with adding entries. Human beings aren’t made to remember that prison 157 is Hassockfield STC. This means that when you’re adding information about a prison, you would need to switch between sheets and check IDs all over the place.</p>
+<section id="apps-script" class="level3">
+<h3 class="anchored" data-anchor-id="apps-script">Apps Script</h3>
+<p>Another feature Google Sheets offers is Apps Script. This is basically the possibility of using javascript to build your own extensions. The way this works is that you provide some code that runs in your sheet, and they provide an API for accessing the data in your sheet. Very clever people can use this to link together Google’s services and even build full web apps. This isn’t something I need to scale, so I’ve made a fairly minimal one, which is just a little sidebar that pops up and tells you about a prison you care about: <img src="prison_spreadsheet_images/sidebar.png" class="img-fluid"></p>
+<p>This is something of a work in progress. If the requirements of the project change, I can make a full user interface, as the Sheets API supports modifying the spreadsheet.</p>
+<p>Here’s the code if you want a look. It’s very much a hack, so I wouldn’t recommend it<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<div class="cell" data-eval="false">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb9" data-startfrom="288" data-source-offset="-1"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 287;"><span id="cb9-288"><a href="#cb9-288" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">onOpen</span>() {</span>
+<span id="cb9-289"><a href="#cb9-289" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> ui <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getUi</span>()<span class="op">;</span></span>
+<span id="cb9-290"><a href="#cb9-290" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> menu <span class="op">=</span> ui<span class="op">.</span><span class="fu">createMenu</span>(<span class="st">'Prison Data'</span>)<span class="op">;</span></span>
+<span id="cb9-291"><a href="#cb9-291" aria-hidden="true" tabindex="-1"></a>  menu<span class="op">.</span><span class="fu">addItem</span>(<span class="st">'Select Prison'</span><span class="op">,</span> <span class="st">'showSidebar'</span>)<span class="op">;</span></span>
+<span id="cb9-292"><a href="#cb9-292" aria-hidden="true" tabindex="-1"></a>  menu<span class="op">.</span><span class="fu">addToUi</span>()<span class="op">;</span></span>
+<span id="cb9-293"><a href="#cb9-293" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-294"><a href="#cb9-294" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-295"><a href="#cb9-295" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">showSidebar</span>() {</span>
+<span id="cb9-296"><a href="#cb9-296" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> html <span class="op">=</span> HtmlService<span class="op">.</span><span class="fu">createHtmlOutputFromFile</span>(<span class="st">'Sidebar'</span>)</span>
+<span id="cb9-297"><a href="#cb9-297" aria-hidden="true" tabindex="-1"></a>      <span class="op">.</span><span class="fu">setTitle</span>(<span class="st">'Prison Information'</span>)<span class="op">;</span></span>
+<span id="cb9-298"><a href="#cb9-298" aria-hidden="true" tabindex="-1"></a>  SpreadsheetApp<span class="op">.</span><span class="fu">getUi</span>()<span class="op">.</span><span class="fu">showSidebar</span>(html)<span class="op">;</span></span>
+<span id="cb9-299"><a href="#cb9-299" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-300"><a href="#cb9-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-301"><a href="#cb9-301" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">prisonOptions</span>() {</span>
+<span id="cb9-302"><a href="#cb9-302" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonsSheet <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getActiveSpreadsheet</span>()<span class="op">.</span><span class="fu">getSheetByName</span>(<span class="st">'Prisons'</span>)<span class="op">;</span></span>
+<span id="cb9-303"><a href="#cb9-303" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonData <span class="op">=</span> prisonsSheet<span class="op">.</span><span class="fu">getDataRange</span>()<span class="op">.</span><span class="fu">getValues</span>()<span class="op">;</span></span>
+<span id="cb9-304"><a href="#cb9-304" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> prisonData<span class="op">.</span><span class="fu">map</span>((row) <span class="kw">=&gt;</span> row[<span class="dv">1</span>])</span>
+<span id="cb9-305"><a href="#cb9-305" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-306"><a href="#cb9-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-307"><a href="#cb9-307" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">getPrisonID</span>(prisonName) {</span>
+<span id="cb9-308"><a href="#cb9-308" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonsSheet <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getActiveSpreadsheet</span>()<span class="op">.</span><span class="fu">getSheetByName</span>(<span class="st">'Prisons'</span>)<span class="op">;</span></span>
+<span id="cb9-309"><a href="#cb9-309" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonData <span class="op">=</span> prisonsSheet<span class="op">.</span><span class="fu">getDataRange</span>()<span class="op">.</span><span class="fu">getValues</span>()<span class="op">;</span></span>
+<span id="cb9-310"><a href="#cb9-310" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonRow <span class="op">=</span> prisonData<span class="op">.</span><span class="fu">find</span>(row <span class="kw">=&gt;</span> row[<span class="dv">1</span>] <span class="op">===</span> prisonName)<span class="op">;</span></span>
+<span id="cb9-311"><a href="#cb9-311" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-312"><a href="#cb9-312" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span>prisonRow) {</span>
+<span id="cb9-313"><a href="#cb9-313" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">'Prison not found'</span><span class="op">;</span></span>
+<span id="cb9-314"><a href="#cb9-314" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-315"><a href="#cb9-315" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-316"><a href="#cb9-316" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> prisonRow[<span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb9-317"><a href="#cb9-317" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-318"><a href="#cb9-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-319"><a href="#cb9-319" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">getSiteInfoForPrison</span>(prisonName) {</span>
+<span id="cb9-320"><a href="#cb9-320" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonsSheet <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getActiveSpreadsheet</span>()<span class="op">.</span><span class="fu">getSheetByName</span>(<span class="st">'Prisons'</span>)<span class="op">;</span></span>
+<span id="cb9-321"><a href="#cb9-321" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonData <span class="op">=</span> prisonsSheet<span class="op">.</span><span class="fu">getDataRange</span>()<span class="op">.</span><span class="fu">getValues</span>()<span class="op">;</span></span>
+<span id="cb9-322"><a href="#cb9-322" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> prisonRow <span class="op">=</span> prisonData<span class="op">.</span><span class="fu">find</span>(row <span class="kw">=&gt;</span> row[<span class="dv">1</span>] <span class="op">==</span> prisonName)<span class="op">;</span></span>
+<span id="cb9-323"><a href="#cb9-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-324"><a href="#cb9-324" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> siteID <span class="op">=</span> prisonRow[<span class="dv">2</span>]<span class="op">;</span></span>
+<span id="cb9-325"><a href="#cb9-325" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> siteSheet <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getActiveSpreadsheet</span>()<span class="op">.</span><span class="fu">getSheetByName</span>(<span class="st">'Sites'</span>)<span class="op">;</span></span>
+<span id="cb9-326"><a href="#cb9-326" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-327"><a href="#cb9-327" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> siteData <span class="op">=</span> siteSheet<span class="op">.</span><span class="fu">getDataRange</span>()<span class="op">.</span><span class="fu">getValues</span>()<span class="op">;</span></span>
+<span id="cb9-328"><a href="#cb9-328" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> siteRow <span class="op">=</span> siteData<span class="op">.</span><span class="fu">find</span>(row <span class="kw">=&gt;</span> row[<span class="dv">0</span>] <span class="op">===</span> siteID)<span class="op">;</span></span>
+<span id="cb9-329"><a href="#cb9-329" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-330"><a href="#cb9-330" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span>siteRow) {</span>
+<span id="cb9-331"><a href="#cb9-331" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">'Site not found'</span><span class="op">;</span></span>
+<span id="cb9-332"><a href="#cb9-332" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-333"><a href="#cb9-333" aria-hidden="true" tabindex="-1"></a>  <span class="co">//Return an object of site information</span></span>
+<span id="cb9-334"><a href="#cb9-334" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {</span>
+<span id="cb9-335"><a href="#cb9-335" aria-hidden="true" tabindex="-1"></a>    <span class="dt">siteName</span><span class="op">:</span> siteRow[<span class="dv">1</span>]<span class="op">,</span></span>
+<span id="cb9-336"><a href="#cb9-336" aria-hidden="true" tabindex="-1"></a>    <span class="dt">latitude</span><span class="op">:</span> siteRow[<span class="dv">2</span>]<span class="op">,</span></span>
+<span id="cb9-337"><a href="#cb9-337" aria-hidden="true" tabindex="-1"></a>    <span class="dt">longitude</span><span class="op">:</span> siteRow[<span class="dv">3</span>]<span class="op">,</span></span>
+<span id="cb9-338"><a href="#cb9-338" aria-hidden="true" tabindex="-1"></a>    <span class="dt">area</span><span class="op">:</span> siteRow[<span class="dv">4</span>]<span class="op">,</span></span>
+<span id="cb9-339"><a href="#cb9-339" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-340"><a href="#cb9-340" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-341"><a href="#cb9-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-342"><a href="#cb9-342" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">getTypeInfoForPrison</span>(prisonID) {</span>
+<span id="cb9-343"><a href="#cb9-343" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> typeSheet <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getActiveSpreadsheet</span>()<span class="op">.</span><span class="fu">getSheetByName</span>(<span class="st">'Types'</span>)<span class="op">;</span></span>
+<span id="cb9-344"><a href="#cb9-344" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-345"><a href="#cb9-345" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> typeData <span class="op">=</span> typeSheet<span class="op">.</span><span class="fu">getDataRange</span>()<span class="op">.</span><span class="fu">getValues</span>()<span class="op">;</span></span>
+<span id="cb9-346"><a href="#cb9-346" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> typeRows <span class="op">=</span> typeData<span class="op">.</span><span class="fu">filter</span>(row <span class="kw">=&gt;</span> row[<span class="dv">0</span>] <span class="op">===</span> prisonID)<span class="op">;</span></span>
+<span id="cb9-347"><a href="#cb9-347" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> typeRows<span class="op">.</span><span class="fu">map</span>(row <span class="kw">=&gt;</span> {<span class="cf">return</span> {</span>
+<span id="cb9-348"><a href="#cb9-348" aria-hidden="true" tabindex="-1"></a>    <span class="dt">type</span><span class="op">:</span> row[<span class="dv">1</span>]<span class="op">,</span></span>
+<span id="cb9-349"><a href="#cb9-349" aria-hidden="true" tabindex="-1"></a>    <span class="dt">start_date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span><span class="op">.</span><span class="fu">test</span>(<span class="bu">String</span>(row[<span class="dv">2</span>])) <span class="op">?</span> <span class="bu">String</span>(row[<span class="dv">2</span>])<span class="op">.</span><span class="fu">match</span>(<span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span>)[<span class="dv">0</span>] <span class="op">:</span> <span class="st">""</span><span class="op">,</span></span>
+<span id="cb9-350"><a href="#cb9-350" aria-hidden="true" tabindex="-1"></a>    <span class="dt">end_date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span><span class="op">.</span><span class="fu">test</span>(<span class="bu">String</span>(row[<span class="dv">3</span>])) <span class="op">?</span> <span class="bu">String</span>(row[<span class="dv">3</span>])<span class="op">.</span><span class="fu">match</span>(<span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span>)[<span class="dv">0</span>] <span class="op">:</span> <span class="st">""</span></span>
+<span id="cb9-351"><a href="#cb9-351" aria-hidden="true" tabindex="-1"></a>  }})<span class="op">;</span></span>
+<span id="cb9-352"><a href="#cb9-352" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-353"><a href="#cb9-353" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-354"><a href="#cb9-354" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">getOperatorDatesForPrison</span>(prisonID) {</span>
+<span id="cb9-355"><a href="#cb9-355" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> opDatesSheet <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getActiveSpreadsheet</span>()<span class="op">.</span><span class="fu">getSheetByName</span>(<span class="st">'Operator dates'</span>)<span class="op">;</span></span>
+<span id="cb9-356"><a href="#cb9-356" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> opDatesData <span class="op">=</span> opDatesSheet<span class="op">.</span><span class="fu">getDataRange</span>()<span class="op">.</span><span class="fu">getValues</span>()<span class="op">;</span></span>
+<span id="cb9-357"><a href="#cb9-357" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> opDatesRows <span class="op">=</span> opDatesData<span class="op">.</span><span class="fu">filter</span>(row <span class="kw">=&gt;</span> row[<span class="dv">2</span>] <span class="op">===</span> prisonID)<span class="op">;</span></span>
+<span id="cb9-358"><a href="#cb9-358" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-359"><a href="#cb9-359" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> datesobj <span class="op">=</span> opDatesRows<span class="op">.</span><span class="fu">map</span>(row <span class="kw">=&gt;</span> {<span class="cf">return</span> {</span>
+<span id="cb9-360"><a href="#cb9-360" aria-hidden="true" tabindex="-1"></a>    <span class="dt">operator</span><span class="op">:</span> row[<span class="dv">1</span>]<span class="op">,</span></span>
+<span id="cb9-361"><a href="#cb9-361" aria-hidden="true" tabindex="-1"></a>    <span class="dt">start_date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span><span class="op">.</span><span class="fu">test</span>(<span class="bu">String</span>(row[<span class="dv">3</span>])) <span class="op">?</span> <span class="bu">String</span>(row[<span class="dv">3</span>])<span class="op">.</span><span class="fu">match</span>(<span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span>)[<span class="dv">0</span>] <span class="op">:</span> <span class="st">""</span><span class="op">,</span></span>
+<span id="cb9-362"><a href="#cb9-362" aria-hidden="true" tabindex="-1"></a>    <span class="dt">end_date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span><span class="op">.</span><span class="fu">test</span>(<span class="bu">String</span>(row[<span class="dv">4</span>])) <span class="op">?</span> <span class="bu">String</span>(row[<span class="dv">4</span>])<span class="op">.</span><span class="fu">match</span>(<span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span>)[<span class="dv">0</span>] <span class="op">:</span> <span class="st">""</span></span>
+<span id="cb9-363"><a href="#cb9-363" aria-hidden="true" tabindex="-1"></a>  }})<span class="op">;</span></span>
+<span id="cb9-364"><a href="#cb9-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-365"><a href="#cb9-365" aria-hidden="true" tabindex="-1"></a>  Logger<span class="op">.</span><span class="fu">log</span>(datesobj)<span class="op">;</span></span>
+<span id="cb9-366"><a href="#cb9-366" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> datesobj</span>
+<span id="cb9-367"><a href="#cb9-367" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-368"><a href="#cb9-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-369"><a href="#cb9-369" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">getCapacitiesForPrison</span>(prisonID) {</span>
+<span id="cb9-370"><a href="#cb9-370" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> capacitiesSheet <span class="op">=</span> SpreadsheetApp<span class="op">.</span><span class="fu">getActiveSpreadsheet</span>()<span class="op">.</span><span class="fu">getSheetByName</span>(<span class="st">'Capacities'</span>)<span class="op">;</span></span>
+<span id="cb9-371"><a href="#cb9-371" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> capacitiesData <span class="op">=</span> capacitiesSheet<span class="op">.</span><span class="fu">getDataRange</span>()<span class="op">.</span><span class="fu">getValues</span>()<span class="op">;</span></span>
+<span id="cb9-372"><a href="#cb9-372" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> capacityRows <span class="op">=</span> capacitiesData<span class="op">.</span><span class="fu">filter</span>(row <span class="kw">=&gt;</span> row[<span class="dv">1</span>] <span class="op">===</span> prisonID)<span class="op">;</span></span>
+<span id="cb9-373"><a href="#cb9-373" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-374"><a href="#cb9-374" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> capacityRows<span class="op">.</span><span class="fu">map</span>(row <span class="kw">=&gt;</span> {<span class="cf">return</span> {</span>
+<span id="cb9-375"><a href="#cb9-375" aria-hidden="true" tabindex="-1"></a>    <span class="dt">operationalCapacity</span><span class="op">:</span> row[<span class="dv">2</span>]<span class="op">,</span></span>
+<span id="cb9-376"><a href="#cb9-376" aria-hidden="true" tabindex="-1"></a>    <span class="dt">start_date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span><span class="op">.</span><span class="fu">test</span>(<span class="bu">String</span>(row[<span class="dv">3</span>])) <span class="op">?</span> <span class="bu">String</span>(row[<span class="dv">3</span>])<span class="op">.</span><span class="fu">match</span>(<span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span>)[<span class="dv">0</span>] <span class="op">:</span> <span class="st">""</span><span class="op">,</span></span>
+<span id="cb9-377"><a href="#cb9-377" aria-hidden="true" tabindex="-1"></a>    <span class="dt">end_date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span><span class="op">.</span><span class="fu">test</span>(<span class="bu">String</span>(row[<span class="dv">4</span>])) <span class="op">?</span> <span class="bu">String</span>(row[<span class="dv">4</span>])<span class="op">.</span><span class="fu">match</span>(<span class="ss">/</span><span class="sc">[\d]{4}</span><span class="ss">/m</span>)[<span class="dv">0</span>] <span class="op">:</span> <span class="st">""</span></span>
+<span id="cb9-378"><a href="#cb9-378" aria-hidden="true" tabindex="-1"></a>  }})<span class="op">;</span></span>
+<span id="cb9-379"><a href="#cb9-379" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-7" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-8" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+And the html
+<details>
+<pre class="{html}"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;style&gt;
+      table {
+        border-collapse: collapse;
+        border: 2 px solid black;
+      }
+      table td, table th {
+        border: 1px solid black;
+      }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;select id="prisonDropdown" onchange="changeID()"&gt;
+      &lt;option value=""&gt;Select a Prison&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;div id="prisonID"&gt;&lt;/div&gt;
+    &lt;div id="siteInfo"&gt;&lt;/div&gt;
+    &lt;div id="typeInfo"&gt;&lt;/div&gt;
+    &lt;br&gt;
+    &lt;div id="operatorDatesInfo"&gt;&lt;/div&gt;
+    &lt;br&gt;
+    &lt;div id="capacitiesInfo"&gt;&lt;/div&gt;
+
+    &lt;script&gt;
+      // Function to populate the dropdown with prison options
+      function populatePrisons(prisons) {
+        var dropdown = document.getElementById("prisonDropdown");
+
+        // Clear existing options
+        dropdown.innerHTML = "";
+
+        // Add options for each prison
+        prisons.forEach(function(prison) {
+          var option = document.createElement("option");
+          option.value = prison;
+          option.text = prison;
+          dropdown.appendChild(option);
+        });
+      }
+
+      // Function to handle error
+      function showError(error) {
+        console.error("Error:", error);
+      }
+
+      // Function to show site info for the selected prison
+      function changeID() {
+        var selectedPrison = document.getElementById("prisonDropdown").value;
+
+        google.script.run.withSuccessHandler(displayPrisonID)
+                          .withFailureHandler(showError)
+                          .getPrisonID(selectedPrison);
+        google.script.run.withSuccessHandler(displaySiteInfo)
+                          .withFailureHandler(showError)
+                          .getSiteInfoForPrison(selectedPrison);
+
+      }
+
+      function showInfo() {
+        var prisonID = parseInt(document.getElementById("prisonID").innerText.slice(11));
+        
+        google.script.run.withSuccessHandler(displayTypeInfo)
+                          .withFailureHandler(showError)
+                          .getTypeInfoForPrison(prisonID);
+        google.script.run.withSuccessHandler(displayOperatorDates)
+                          .withFailureHandler(showError)
+                          .getOperatorDatesForPrison(prisonID);
+        google.script.run.withSuccessHandler(displayCapacities)
+                          .withFailureHandler(showError)
+                          .getCapacitiesForPrison(prisonID);
+
+      }
+
+      function displayPrisonID(prisonID) {
+        var prisonIDDiv = document.getElementById("prisonID");
+        prisonIDDiv.innerHTML = `&lt;p&gt;Prison ID: ${prisonID}&lt;/p&gt;`;
+        // Trigger the showInfo function after updating the prisonID div
+        showInfo();
+      }
+
+      // Function to display site info in the "siteInfo" div
+      function displaySiteInfo(siteInfo) {
+        var siteInfoDiv = document.getElementById("siteInfo");
+        siteInfoDiv.innerHTML = `
+          &lt;p&gt;Site Name: ${siteInfo.siteName}&lt;/p&gt;
+          &lt;p&gt;Latitude: ${siteInfo.latitude}&lt;/p&gt;
+          &lt;p&gt;Longitude: ${siteInfo.longitude}&lt;/p&gt;
+          &lt;p&gt;Area: ${siteInfo.area}&lt;/p&gt;
+        `;
+      }
+
+
+      // Function to show type info in the "typeInfo" div
+      function displayTypeInfo(typeInfo) {
+        var typeInfoDiv = document.getElementById("typeInfo");
+        var tableHTML = "&lt;table style=\"border: 1px solid black\"&gt;&lt;tr&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;End Date&lt;/th&gt;&lt;/tr&gt;";
+
+        typeInfo.forEach(function(type) {
+          tableHTML += `&lt;tr&gt;&lt;td&gt;${type.type}&lt;/td&gt;&lt;td&gt;${type.start_date}&lt;/td&gt;&lt;td&gt;${type.end_date}&lt;/td&gt;&lt;/tr&gt;`;
+        });
+        
+        tableHTML += "&lt;/table&gt;";
+        typeInfoDiv.innerHTML = tableHTML;
+      }
+
+      function displayOperatorDates(operatorDates) {
+        var operatorDatesInfoDiv = document.getElementById("operatorDatesInfo");
+        var tableHTML = "&lt;table&gt;&lt;tr&gt;&lt;th&gt;Operator&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;End Date&lt;/th&gt;&lt;/tr&gt;";
+        operatorDates.forEach(function(dateInfo) {
+          tableHTML += `&lt;tr&gt;&lt;td&gt;${dateInfo.operator}&lt;/td&gt;&lt;td&gt;${dateInfo.start_date}&lt;/td&gt;&lt;td&gt;${dateInfo.end_date}&lt;/td&gt;&lt;/tr&gt;`;
+          });
+          tableHTML += "&lt;/table&gt;";
+          operatorDatesInfoDiv.innerHTML = tableHTML;
+        console.log(operatorDates);
+      }
+
+      function displayCapacities(capacites) {
+        var capacitesDiv = document.getElementById("capacitiesInfo");
+        var tableHTML = "&lt;table&gt;&lt;tr&gt;&lt;th&gt;Capacity&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;End Date&lt;/th&gt;&lt;/tr&gt;";
+        capacites.forEach(function(dateInfo) {
+          tableHTML += `&lt;tr&gt;&lt;td&gt;${dateInfo.operationalCapacity}&lt;/td&gt;&lt;td&gt;${dateInfo.start_date}&lt;/td&gt;&lt;td&gt;${dateInfo.end_date}&lt;/td&gt;&lt;/tr&gt;`;
+          });
+          tableHTML += "&lt;/table&gt;";
+          capacitesDiv.innerHTML = tableHTML;
+      }
+      // Call the prisonOptions function in the Google Apps Script
+      // and populate the dropdown with the retrieved prison data
+      google.script.run.withSuccessHandler(populatePrisons)
+                        .withFailureHandler(showError)
+                        .prisonOptions();
+      
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</details>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>So what is the takeaway here? Just use spreadsheets? No.&nbsp;I’m doing my best not to use the spreadsheet as a spreadsheet. I guess my conclusion here is that it’s hard to argue with free hosting where someone else handles security for you!</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>I used a horrible regular expression: ((,)?(&gt;)?|(?:(,)? (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) )|(?:(,)? )) then used the dataframe’s <code>explode</code> method<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>particularly the bit where I don’t bother parsing the datetime format to read the year from cells, and use a regular expression instead<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../data-analysis";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

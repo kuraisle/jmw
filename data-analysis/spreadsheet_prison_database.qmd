@@ -1,0 +1,525 @@
+---
+title: "There and back again: a spreadsheets' tale"
+format:
+  html:
+    code-fold: true
+    code-summary: Show the code
+description: In which I complain about spreadsheets, normalize a database, then make another spreadsheet
+date-format: iso
+categories:
+  - data analysis
+  - prison map
+date: 2024-03-14
+execute:
+  freeze: true
+---
+This post might count as a confession. I always complain about spreadsheets, and that the more ornate you make them the more brittle they are. Here's how I've made a pretty complicated spreadsheet, and why I did it. This is quite a long one, and if you aren't interested in hearing why I don't think spreadsheets are the best solution to the problems they are applied to at great length, maybe give this one a miss. If you want to read some of my thought process approaching a problem, and about my gifts as a cheapskate, then please continue.
+
+## The Data
+I'm working with a friend who's a sociologist on an interactive map of UK prisons. In [a previous step](prison_map.qmd), I scraped Wikipedia for the coordinates of each listed prison and put a dot on the map for each one. My friend also sent me a spreadsheet with a lot more information about prisons, including some that are closed. He's also interested in immigration detention, so there's information about removal centres etc. in there.
+
+Let's look at the spreadsheet:
+```{python}
+import pandas as pd
+tom_df = pd.read_excel("data/Prison database.xlsb.xlsx", sheet_name="eprison")
+tom_df.dropna(axis=1, how='all', inplace=True)
+tom_df.drop(['Column1', *['Column'+str(i) for i in range(3,10)]], axis = 1, inplace=True)
+tom_df['Name'] = tom_df['Name'].str.title().str.replace(' Sch', ' SCH')
+tom_df.head()
+```
+So there are some more columns here, like the prison type and capacity. I'll merge this with my coordinate data. Then I'll make the prison names a bit more pleasant to read by first making them title case, rather than ALL CAPS, and then make the initialisms ("SCH" for Secure Children's Home etc.) uppercase.
+```{python}
+coordinate_df = pd.read_csv("data/prison_coordinates.csv")
+coordinate_df.rename(columns = {'Unnamed: 0': 'Name'}, inplace=True)
+coordinate_df.drop("Coordinates", axis = 1, inplace=True)
+
+prison_with_coord_df = pd.merge(left=coordinate_df.drop(columns = 'Operator'),
+                  right=tom_df,
+                  on='Name',
+                  how='outer')
+
+prison_with_coord_df['Prison Name'] = prison_with_coord_df['Prison Name'].str.title()
+
+prison_with_coord_df['Prison Name'] = prison_with_coord_df['Prison Name'].replace({'Hmp': 'HMP',
+                                                                ' Sch': ' SCH',
+                                                                'HMPYOI': 'HMPYOI',
+                                                                'Yoi ': 'YOI ',
+                                                                'Hmyoi': 'HMYOI',
+                                                                'Stc': 'STC',
+                                                                'Irc': 'IRC',
+                                                                "'S": "'s"
+                                                                }, regex=True)
+
+prison_with_coord_df.loc[~prison_with_coord_df['latitude'].isnull()].head()
+```
+That's a bit nicer, isn't it? There are still some things that aren't ideal about this dataset.
+
+## Improving the data model
+### Room for improvement
+```{python}
+#| warning: false
+show_multiple = prison_with_coord_df[['Prison Name', 'Operational Capacity']]
+show_multiple['cap_len'] = show_multiple['Operational Capacity'].apply(lambda x: len(x.split(' ')) if type(x) == str else 0)
+show_multiple.sort_values(by='cap_len', ascending=False).drop(columns=['cap_len']).head(10)
+```
+This is the first issue. Some columns, including the Operational Capacity, contain multiple pieces of data. The problem, of course, is that the prisons can change over time. I did try to parse this^[I used a horrible regular expression: (\d{1,3}(,)?\d{3}(>)?|(?:\d{1,3}(,)?\d{3} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4})|(?:\d{1,3}(,)?\d{3} \d{4})) then used the dataframe's `explode` method] and keep the structure, but the underlying problem is that a single table is insufficient to deal with the nature of prisons over time.
+
+### A better data model
+To get things in a more reasonable format, let's use the concept of a data model. This will let us think about what aspects of a prison we really want to capture. Here are the facts:
+
+1. More than one prison can have existed on one site (e.g. HMP Fosse Way was built on the site of HMP Glen Parva)
+2. A prison can change capacity over time. A new wing can be added, or another closed.
+3. A prison can change operator over time. Some have been turned over to private operators, others go from being a prison to some kind of immigration detention centre and back again.
+4. A prison can change type over time. The classification of prisoner security can change, or the age or gender of inmates can change
+
+This means we can represent our data like this:
+
+```{mermaid}
+erDiagram
+  SITES ||--o{ PRISONS : contains
+  SITES {
+    int site_id
+    string site_name
+    float latitude
+    float longitude
+    float area
+  }
+  PRISONS {
+    int prison_id
+    string prison_name
+    int site_id
+  }
+  PRISONS ||--o{ TYPES : has
+  TYPES {
+    int prison_id
+    string type
+    date start_date
+    date end_date
+  }
+  OPERATOR_DATES }o--|| PRISONS : operates
+  OPERATOR_DATES {
+    int operation_id
+    string operator
+    int prison_id
+    date start_date
+    date end_date
+  }
+  PRISONS ||--o{ CAPACITIES : has
+  CAPACITIES {
+    int capacity_id
+    int prison_id
+    int operational_capacity
+    date start_date
+    date end_date
+  }
+```
+
+Here we have split one table into multiple tables. This allows each prison to be represented once in the prisons table, and the ways each prison changes over time in different ways to be represented separately. In the "Types", "Operator Dates", and "Capacities" tables, the prison_id field means you can relate each entry to a prison.
+
+This way of representing the data scratches an itch in my brain. In data terms, this is called a "data schema". The original data was sort of in one too, if not consistently. This particular schema is quite simple, and known as a star schema. In this terminology, the prisons table is a fact table, and the others are dimension tables. I could further split these up so the dimension tables had further dimensions off these, but I think for this relatively small dataset, this is sufficient.
+
+Using the star schema we can capture the ways a prison can change over time independently (even if changes often occur together) in a reliable way.
+
+## Data wrangling
+So how do we move from the "flat" table in the spreadsheet to the star schema?
+
+### Sites table
+The first thing to do is to make an entry for each site. In the current data, there are only two prisons that share a site, but I suspect as data is added we may well find more.
+
+```{python}
+site_df = pd.DataFrame({
+    'site_name': prison_with_coord_df['Name'].unique()
+})
+
+site_df = site_df.merge(prison_with_coord_df[['Name', 'Area', 'latitude', 'longitude']], left_on='site_name', right_on='Name').drop(columns='Name')
+site_df['area'] = site_df['Area'].apply(lambda x: float(x.split(' ')[0]) if type(x) == str else x)
+site_df.drop(columns='Area', inplace=True)
+site_df.drop_duplicates(inplace=True)
+site_df['site_id'] = site_df.index + 1
+site_df.head()
+```
+
+I also did a simple bit of data cleaning here. The area column was given as a string with "X hectares". As each entry was given in hectares, I've removed that and made it a number.
+
+### Prisons table
+The central table of the schema is pretty simple. All I've done here is take the prison name, added a column to generate a prison ID for the rest of the tables, then joined it with the sites table so we can find the site it was built on.
+
+```{python}
+prisons_df = pd.DataFrame({
+    'prison_name': prison_with_coord_df['Prison Name'],
+    'site': prison_with_coord_df['Name']
+})
+prisons_df = prisons_df.merge(site_df[['site_name', 'site_id']], left_on = 'site', right_on = 'site_name').drop(columns=['site', 'site_name'])
+prisons_df['prison_id'] = prisons_df.index+1
+prisons_df.dropna(inplace=True)
+
+prisons_df.head()
+```
+
+### Types table
+Making this dimension table is pretty simple too. This is only true because the complexity prison histories isn't held in this dataset!
+
+```{python}
+types_df = prison_with_coord_df[['Prison Name', 'Type', 'Opened', 'Closed']]
+types_df.columns = ['prison_name', 'prison_type', 'start_date', 'end_date']
+
+types_df = types_df.merge(prisons_df, on = 'prison_name').drop(columns=['prison_name', 'site_id'])
+
+types_df
+```
+
+There's no data in the original about how the types changed over time, exept sporadically in notes. For example, HMP Morton Hall has changed type at least five times since 1985, but this isn't captured. For now, I'm just taking the type provided and pretending that has been the type for the history of the prison. In a later stage, the histories will be captured more fully. I'll also restrict the possible values for type, as there are defined types a prison can have, and the type column in the spreadsheet isn't consistent with this. For now, this will do.
+
+### Operator table
+This one isn't hard either, and just needs a bit of cleaning
+```{python}
+#| warning: false
+operator_df = prison_with_coord_df[['Prison Name', 'Operator', 'Opened', 'Closed']]
+
+operator_df.columns = ['prison_name', 'operator', 'start_date', 'end_date']
+operator_df['operator'] = operator_df['operator'].apply(lambda x: x.split('- ')[1] if type(x) == str and len(x.split('- ')) > 1 else x)
+
+operator_df['operator'] = operator_df['operator'].replace({'Ministry of Justice': 'His Majesty\'s Prison Service', 'Serco&nbsp':'Serco'})
+
+operator_df = operator_df.merge(prisons_df[['prison_name', 'prison_id']], on='prison_name', how='left')
+operator_df['operation_id'] = operator_df.index+1
+operator_df = operator_df.loc[~operator_df['prison_name'].isnull()].drop(columns=['prison_name'])
+
+operator_df
+```
+The main thing here is that whether the prison was privately or publicly owned was included in the column. I've removed this, then have done some tidying. I later had to go through manually and correct some spelling mistakes. Some stuff is easier not to bother programming in.
+
+This presents an opportunity to show the strengths of making a more complex schema. If we wanted to keep track whether a prison was privately or publicly operated, we could add another table to the model to represent this.
+
+```{mermaid}
+erDiagram
+  SITES ||--o{ PRISONS : contains
+  SITES {
+    int site_id
+    string site_name
+    float latitude
+    float longitude
+    float area
+  }
+  PRISONS {
+    int prison_id
+    string prison_name
+    int site_id
+  }
+  PRISONS ||--o{ TYPES : has
+  TYPES {
+    int prison_id
+    string type
+    date start_date
+    date end_date
+  }
+  OPERATOR_DATES }o--|| PRISONS : operates
+  OPERATOR_DATES {
+    int operation_id
+    string operator
+    int prison_id
+    date start_date
+    date end_date
+  }
+  PRISONS ||--o{ CAPACITIES : has
+  CAPACITIES {
+    int capacity_id
+    int prison_id
+    int operational_capacity
+    date start_date
+    date end_date
+  }
+  OPERATOR_TYPE ||--o{ OPERATOR_DATES : public
+  OPERATOR_TYPE {
+    string operator
+    bool public
+  }
+```
+
+I'm not doing this for now, as there are not many operators and the purpose of the model doesn't require it.
+
+### Capacity table
+This might be the messiest one. We do have multiple pieces of data, as we've seen above. What I'm doing for now is pretending each prison hasn't changed over time, and this is mostly because the dates provided are mostly when a capacity was recorded, not when the change happened. Unfortunately for my sociologist friend, this is going to mean a lot of digging and manual data entry, unless we find a new data source!
+
+```{python}
+capacities_df = prison_with_coord_df[['Prison Name', 'Operational Capacity', 'Opened', 'Closed']]
+capacities_df.columns = ['prison_name', 'operational_capacity', 'start_date', 'end_date']
+
+capacities_df = capacities_df.merge(prisons_df, on='prison_name', how='left').drop(columns=['prison_name', 'site_id'])
+
+capacities_df['operational_capacity'] = capacities_df['operational_capacity'].apply(lambda x: x.split(' ')[0] if type(x) == str else x)
+capacities_df['operational_capacity'] = capacities_df['operational_capacity'].str.replace(r'[^1-9]','', regex=True)
+capacities_df['operational_capacity'] = capacities_df['operational_capacity'].apply(lambda x: int(x) if type(x) == str and len(x) > 0 else None)
+capacities_df['capacity_id'] = capacities_df.index+1
+
+capacities_df
+```
+
+## What now?
+We have the data in the tables as required, with the relationships between tables established.
+
+### The ideal world
+What we have here is a great case for using a relational database. Relational Database Management Systems are well-established pieces of software that make it easy for you to add entries to a system like this while maintaining data integrity, and have guard rails in place to stop you from doing something that breaks your system.
+
+### The real world
+More important than protecting users from themselves, and providing a convenient interface is the ability to share it with my collaborator. There are free database hosting services, but these are mostly trials, and often involve learning a proprietary system. Then I have to set up administration so that my friend can edit it and protect it from vandals. Because I am both stupid and lazy, I'm going to use a stupid and lazy solution: another spreadsheet.
+
+## Back to a spreadsheet
+Google sheets has the features I want - I can share it with my friend and Google handles authentication for me. I can mitigate some of the risks of using a spreadsheet by applying data validation rules. For example, as there are a limited set of options, I can restrict that column of the spreadsheet to only accept those options. Sheets also makes these into a snazzy drop-down menu:
+
+![](prison_spreadsheet_images/validation_options.png)
+
+I have also made it so it shouts at you if you try to duplicate entries by adding a prison twice or trying to reuse a prison ID, for example.
+
+The difficulty comes with adding entries. Human beings aren't made to remember that prison 157 is Hassockfield STC. This means that when you're adding information about a prison, you would need to switch between sheets and check IDs all over the place.
+
+### Apps Script
+
+Another feature Google Sheets offers is Apps Script. This is basically the possibility of using javascript to build your own extensions. The way this works is that you provide some code that runs in your sheet, and they provide an API for accessing the data in your sheet. Very clever people can use this to link together Google's services and even build full web apps. This isn't something I need to scale, so I've made a fairly minimal one, which is just a little sidebar that pops up and tells you about a prison you care about:
+![](prison_spreadsheet_images/sidebar.png)
+
+This is something of a work in progress. If the requirements of the project change, I can make a full user interface, as the Sheets API supports modifying the spreadsheet.
+
+Here's the code if you want a look. It's very much a hack, so I wouldn't recommend it^[particularly the bit where I don't bother parsing the datetime format to read the year from cells, and use a regular expression instead].
+
+```{ojs}
+//| eval: false
+
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  var menu = ui.createMenu('Prison Data');
+  menu.addItem('Select Prison', 'showSidebar');
+  menu.addToUi();
+}
+
+function showSidebar() {
+  var html = HtmlService.createHtmlOutputFromFile('Sidebar')
+      .setTitle('Prison Information');
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+function prisonOptions() {
+  var prisonsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Prisons');
+  var prisonData = prisonsSheet.getDataRange().getValues();
+  return prisonData.map((row) => row[1])
+}
+
+function getPrisonID(prisonName) {
+  var prisonsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Prisons');
+  var prisonData = prisonsSheet.getDataRange().getValues();
+  var prisonRow = prisonData.find(row => row[1] === prisonName);
+  
+  if (!prisonRow) {
+    return 'Prison not found';
+  }
+  
+  return prisonRow[0];
+}
+
+function getSiteInfoForPrison(prisonName) {
+  var prisonsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Prisons');
+  var prisonData = prisonsSheet.getDataRange().getValues();
+  var prisonRow = prisonData.find(row => row[1] == prisonName);
+
+  var siteID = prisonRow[2];
+  var siteSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sites');
+  
+  var siteData = siteSheet.getDataRange().getValues();
+  var siteRow = siteData.find(row => row[0] === siteID);
+  
+  if (!siteRow) {
+    return 'Site not found';
+  }
+  //Return an object of site information
+  return {
+    siteName: siteRow[1],
+    latitude: siteRow[2],
+    longitude: siteRow[3],
+    area: siteRow[4],
+  }
+}
+
+function getTypeInfoForPrison(prisonID) {
+  var typeSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Types');
+  
+  var typeData = typeSheet.getDataRange().getValues();
+  var typeRows = typeData.filter(row => row[0] === prisonID);
+  return typeRows.map(row => {return {
+    type: row[1],
+    start_date: /[\d]{4}/m.test(String(row[2])) ? String(row[2]).match(/[\d]{4}/m)[0] : "",
+    end_date: /[\d]{4}/m.test(String(row[3])) ? String(row[3]).match(/[\d]{4}/m)[0] : ""
+  }});
+}
+
+function getOperatorDatesForPrison(prisonID) {
+  var opDatesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Operator dates');
+  var opDatesData = opDatesSheet.getDataRange().getValues();
+  var opDatesRows = opDatesData.filter(row => row[2] === prisonID);
+  
+  var datesobj = opDatesRows.map(row => {return {
+    operator: row[1],
+    start_date: /[\d]{4}/m.test(String(row[3])) ? String(row[3]).match(/[\d]{4}/m)[0] : "",
+    end_date: /[\d]{4}/m.test(String(row[4])) ? String(row[4]).match(/[\d]{4}/m)[0] : ""
+  }});
+
+  Logger.log(datesobj);
+  return datesobj
+}
+
+function getCapacitiesForPrison(prisonID) {
+  var capacitiesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Capacities');
+  var capacitiesData = capacitiesSheet.getDataRange().getValues();
+  var capacityRows = capacitiesData.filter(row => row[1] === prisonID);
+  
+  return capacityRows.map(row => {return {
+    operationalCapacity: row[2],
+    start_date: /[\d]{4}/m.test(String(row[3])) ? String(row[3]).match(/[\d]{4}/m)[0] : "",
+    end_date: /[\d]{4}/m.test(String(row[4])) ? String(row[4]).match(/[\d]{4}/m)[0] : ""
+  }});
+}
+```
+
+And the html
+<details>
+```{html}
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      table {
+        border-collapse: collapse;
+        border: 2 px solid black;
+      }
+      table td, table th {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <select id="prisonDropdown" onchange="changeID()">
+      <option value="">Select a Prison</option>
+    </select>
+    <div id="prisonID"></div>
+    <div id="siteInfo"></div>
+    <div id="typeInfo"></div>
+    <br>
+    <div id="operatorDatesInfo"></div>
+    <br>
+    <div id="capacitiesInfo"></div>
+
+    <script>
+      // Function to populate the dropdown with prison options
+      function populatePrisons(prisons) {
+        var dropdown = document.getElementById("prisonDropdown");
+
+        // Clear existing options
+        dropdown.innerHTML = "";
+
+        // Add options for each prison
+        prisons.forEach(function(prison) {
+          var option = document.createElement("option");
+          option.value = prison;
+          option.text = prison;
+          dropdown.appendChild(option);
+        });
+      }
+
+      // Function to handle error
+      function showError(error) {
+        console.error("Error:", error);
+      }
+
+      // Function to show site info for the selected prison
+      function changeID() {
+        var selectedPrison = document.getElementById("prisonDropdown").value;
+
+        google.script.run.withSuccessHandler(displayPrisonID)
+                          .withFailureHandler(showError)
+                          .getPrisonID(selectedPrison);
+        google.script.run.withSuccessHandler(displaySiteInfo)
+                          .withFailureHandler(showError)
+                          .getSiteInfoForPrison(selectedPrison);
+
+      }
+
+      function showInfo() {
+        var prisonID = parseInt(document.getElementById("prisonID").innerText.slice(11));
+        
+        google.script.run.withSuccessHandler(displayTypeInfo)
+                          .withFailureHandler(showError)
+                          .getTypeInfoForPrison(prisonID);
+        google.script.run.withSuccessHandler(displayOperatorDates)
+                          .withFailureHandler(showError)
+                          .getOperatorDatesForPrison(prisonID);
+        google.script.run.withSuccessHandler(displayCapacities)
+                          .withFailureHandler(showError)
+                          .getCapacitiesForPrison(prisonID);
+
+      }
+
+      function displayPrisonID(prisonID) {
+        var prisonIDDiv = document.getElementById("prisonID");
+        prisonIDDiv.innerHTML = `<p>Prison ID: ${prisonID}</p>`;
+        // Trigger the showInfo function after updating the prisonID div
+        showInfo();
+      }
+
+      // Function to display site info in the "siteInfo" div
+      function displaySiteInfo(siteInfo) {
+        var siteInfoDiv = document.getElementById("siteInfo");
+        siteInfoDiv.innerHTML = `
+          <p>Site Name: ${siteInfo.siteName}</p>
+          <p>Latitude: ${siteInfo.latitude}</p>
+          <p>Longitude: ${siteInfo.longitude}</p>
+          <p>Area: ${siteInfo.area}</p>
+        `;
+      }
+
+
+      // Function to show type info in the "typeInfo" div
+      function displayTypeInfo(typeInfo) {
+        var typeInfoDiv = document.getElementById("typeInfo");
+        var tableHTML = "<table style=\"border: 1px solid black\"><tr><th>Type</th><th>Start Date</th><th>End Date</th></tr>";
+
+        typeInfo.forEach(function(type) {
+          tableHTML += `<tr><td>${type.type}</td><td>${type.start_date}</td><td>${type.end_date}</td></tr>`;
+        });
+        
+        tableHTML += "</table>";
+        typeInfoDiv.innerHTML = tableHTML;
+      }
+
+      function displayOperatorDates(operatorDates) {
+        var operatorDatesInfoDiv = document.getElementById("operatorDatesInfo");
+        var tableHTML = "<table><tr><th>Operator</th><th>Start Date</th><th>End Date</th></tr>";
+        operatorDates.forEach(function(dateInfo) {
+          tableHTML += `<tr><td>${dateInfo.operator}</td><td>${dateInfo.start_date}</td><td>${dateInfo.end_date}</td></tr>`;
+          });
+          tableHTML += "</table>";
+          operatorDatesInfoDiv.innerHTML = tableHTML;
+        console.log(operatorDates);
+      }
+
+      function displayCapacities(capacites) {
+        var capacitesDiv = document.getElementById("capacitiesInfo");
+        var tableHTML = "<table><tr><th>Capacity</th><th>Start Date</th><th>End Date</th></tr>";
+        capacites.forEach(function(dateInfo) {
+          tableHTML += `<tr><td>${dateInfo.operationalCapacity}</td><td>${dateInfo.start_date}</td><td>${dateInfo.end_date}</td></tr>`;
+          });
+          tableHTML += "</table>";
+          capacitesDiv.innerHTML = tableHTML;
+      }
+      // Call the prisonOptions function in the Google Apps Script
+      // and populate the dropdown with the retrieved prison data
+      google.script.run.withSuccessHandler(populatePrisons)
+                        .withFailureHandler(showError)
+                        .prisonOptions();
+      
+    </script>
+  </body>
+</html>
+```
+</details>
+
+## Conclusion
+So what is the takeaway here? Just use spreadsheets? No. I'm doing my best not to use the spreadsheet as a spreadsheet. I guess my conclusion here is that it's hard to argue with free hosting where someone else handles security for you!
