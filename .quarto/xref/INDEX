@@ -79,5 +79,11 @@
   },
   "data-analysis/spreadsheet_prison_database.qmd": {
     "spreadsheet_prison_database.html": "a7b5be06"
+  },
+  "data-analysis/prison_map_move_from_quarto.qmd": {
+    "prison_map_move_from_quarto.html": "3ed5d667"
+  },
+  "data-analysis/prison_map_move_from_plotly.qmd": {
+    "prison_map_move_from_plotly.html": "a325c93a"
   }
 }

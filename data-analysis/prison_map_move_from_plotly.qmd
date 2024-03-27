@@ -1,0 +1,212 @@
+---
+title: "Meeting the limit of Plotly maps"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+description: In trying to make an animated prison map, I've reached one of Plotly's limits
+date-format: iso
+image: plotly_wont_work.png
+categories:
+  - data analysis
+  - prison map
+date: 2024-03-23
+execute:
+  freeze: true
+---
+Previously, I have used Plotly to [make a map of UK prisons](prison_map), and [built a data model for how they change over time](spreadsheet_prison_data). I had hoped to be able to combine these, but I think I'll have to change tack to make the animated map I had planned.
+
+## Data extraction
+
+First, I need the data. I'm using Plotly's `scatter_mapbox()` to create the map. The plan is to have the colours represent the operator, the size represent the operational capacity, then animate over time. I had a nice little tooltip on the static version of the plot, so it would be nice to include other information like the type of prison on that. This means each row of the table needs to contain:
+
+1. Prison name
+2. Latitude
+3. Longitude
+4. Prison type
+5. Operational capacity
+6. Operator
+7. Date
+
+### SQL
+
+For my friend to update the data as he finds it, I have a spreadsheet. For my own purposes, however, I have an sqlite database. Partly I'm hoping having it in this format will help protect me from the perils of spreadsheets, partly I want an excuse to use SQL. I've explored SQL through coding problems, but haven't really used it for anything practical.
+
+```{python}
+import sqlite3
+import pandas as pd
+import itertools
+import plotly.express as px
+
+# Connect to the database
+conn = sqlite3.connect('data/prisons.db')
+
+# Perform SQL query
+query = """
+SELECT 
+    s.latitude, 
+    s.longitude, 
+    p.prison_name, 
+    pt.prison_type, 
+    pc.operational_capacity, 
+    od.operator, 
+    od.start_date AS date 
+FROM 
+    sites s
+JOIN 
+    prisons p ON s.site_id = p.site_id
+JOIN 
+    prison_types pt ON p.prison_id = pt.prison_id
+JOIN 
+    prison_capacities pc ON p.prison_id = pc.prison_id
+JOIN 
+    operator_dates od ON p.prison_id = od.prison_id
+WHERE 
+    (pt.prison_type, pc.operational_capacity, od.operator, od.start_date) IN (
+        SELECT DISTINCT 
+            prison_type, 
+            operational_capacity, 
+            operator, 
+            operator_dates.start_date 
+        FROM 
+            prison_types 
+        JOIN 
+            prison_capacities ON prison_types.prison_id = prison_capacities.prison_id
+        JOIN 
+            operator_dates ON prison_types.prison_id = operator_dates.prison_id
+    )
+"""
+
+# Execute the query
+df = pd.read_sql_query(query, conn)
+conn.close()
+```
+I'm about to go through the SQL query in some detail. If that sounds dreadful, you should probably skip ahead to the next section.
+
+The basic stuff is at the top. The `SELECT` statement describes the kind of table that plotly needs, with the correct fields. The `FROM` and `JOIN` statements mean we can get all of the data from the tables in the database, using the relationships set up in the data model.
+
+The interesting part is in the `WHERE` clause. You might notice that the code inside the brackets looks a bit like the overall query. This is a subquery that makes a makes a table with a row for every time there is a new operator for a prison. This works by combining every `DISTINCT` value taken from these tables. This won't do exactly what I want in the end: I'm going to want a new row for every time any of these attributes changes, but it's good enough to start creating this map.
+
+## Data manipulation
+
+### Cleaning
+
+For some of the values in this table, the dates might be parsed as timestamps. For any dates in the original data, the values will be a four digit integer, as a string. We will tidy these up and initially simply have them as an integer for the year. We also have prisons dating back a long way; for example, the Marshalsea was open from 1373-1842. However, there was not much change back then, so the map is fairly boring early on, and the interesting stuff only comes along in the 20th century, so we can filter out events before then to show a more informative range.
+```{python}
+#| warning: false
+df.dropna(inplace=True)
+df['date'] = df['date'].apply(lambda x: x.year if isinstance(x, pd.Timestamp) else int(x))
+
+
+df_after_1900 = df.loc[df['date'] >=1900]
+df_after_1900.sort_values('date', inplace=True)
+df_after_1900.head()
+```
+### Filling in dates
+
+If we plot this data, you will see a problem.
+
+```{python}
+#| warning: false
+df_after_1900['datestamp'] = pd.to_datetime(df_after_1900['date'], format='%Y')
+fig = px.scatter_mapbox(
+    df_after_1900,
+    lat = 'latitude',
+    lon = 'longitude',
+    mapbox_style = 'carto-positron',
+    custom_data = ['prison_name', 'operational_capacity', 'operator', 'date'],
+    size = 'operational_capacity',
+    color = 'operator',
+    animation_frame = 'datestamp',
+    animation_group = 'prison_name',
+    width = 800,
+    height = 800,
+    zoom = 4.6,
+)
+
+
+# Update the map center
+fig.update_mapboxes(
+    center_lat = 54,
+    center_lon= -2.5
+)
+
+# Show the figure
+fig.show()
+```
+
+Plotly's API requires that you have a row for every entity at every year you want to see it. The current form of the DataFrame is an entry every time an aspect of a prison changes. This is why we only get spots popping up every so often - Plotly thinks that the prisons only exist when things change. This means that for the kind of map I'm after, I'll need to make a row for every year for every prison and fill in the data.
+
+First I need all the prison names:
+
+```{python}
+prison_names = pd.Series(df_after_1900['prison_name'].unique(), name='prison_name')
+prison_names
+```
+
+Then make a range of the years covered in the dataset and make a row for each year for each prison. Luckily, pandas includes one of the weirder join operations, the cross-join, which achieves exactly this.
+```{python}
+df_to_plot = pd.DataFrame({"date": range(min(df_after_1900['date']),
+                                         max(df_after_1900['date']))})\
+                        .merge(prison_names, how='cross')
+df_to_plot.head()
+```
+
+Then we can fill in the data from the table taken from the database, so each year there's a change, the right information is added.
+
+```{python}
+df_to_plot = df_to_plot.merge(df_after_1900.drop(columns='datestamp'), how='left').sort_values(['prison_name', 'date'])
+df_to_plot.loc[df_to_plot['prison_name'] == 'HMP Altcourse']
+```
+
+Most of these rows are empty, because for most years nothing happens to a particular prison. What we can do now is, for each column, fill the data in from the last change, crucially filling only forward. Then we can drop the rows from before a prison opens, because we've only filled in forward in time.
+
+```{python}
+df_to_plot['prison_type'] = df_to_plot.groupby(['prison_name'])['prison_type'].ffill()
+df_to_plot['operator'] = df_to_plot.groupby(['prison_name'])['operator'].ffill()
+df_to_plot['operational_capacity'] = df_to_plot.groupby(['prison_name'])['operational_capacity'].ffill()
+df_to_plot['latitude'] = df_to_plot.groupby(['prison_name'])['latitude'].ffill()
+df_to_plot['longitude'] = df_to_plot.groupby(['prison_name'])['longitude'].ffill()
+df_to_plot['date'] = pd.to_datetime(df_to_plot['date'], format='%Y')
+
+df_to_plot.dropna(inplace=True)
+df_to_plot.sort_values('date', inplace=True)
+df_to_plot.head()
+```
+
+Now we have the table in the format required we can plot it... right?
+
+## A disappointing map
+
+```{python}
+fig = px.scatter_mapbox(
+    df_to_plot,
+    lat = 'latitude',
+    lon = 'longitude',
+    mapbox_style = 'carto-positron',
+    custom_data = ['prison_name', 'operational_capacity', 'operator', 'date'],
+    size = 'operational_capacity',
+    color = 'operator',
+    animation_frame = 'date',
+    animation_group = 'prison_name',
+    width = 800,
+    height = 800,
+    zoom = 4.6,
+)
+
+
+# Update the map center
+fig.update_mapboxes(
+    center_lat = 54,
+    center_lon= -2.5
+)
+
+# Show the figure
+fig.show()
+```
+
+I was very sure I had messed up here, somehow, as only some of the prisons show up, and those are only publicly operated. What I eventually figured out is that plotly's `scatter_mapbox` will only read the first few thousand rows of a dataframe. This means that only some of the prisons are plotted. It's tantalisingly close but I can't see anything in the documentation that means I can change this. I think this means that I'm going to have to do some hard work to plot all of the prisons.
+
+## Next steps
+
+I did worry, when I was planning this, that having a row for each year when most years nothing happens was not the ideal solution. I have been messing about with javascript versions of the map, but nothing is ready yet!
