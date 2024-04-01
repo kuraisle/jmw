@@ -4,6 +4,9 @@ format: html
 description: An encyclopedia article on the use of opsins as models for membrane protein folding.
 date-format: iso
 date: 2020-09-26
+categories:
+  - review
+  - PhD
 ---
 
 This article is an update to an existing entry in the Encyclopedia of Biophysics covering the work of my PhD supervisor and others on models for the folding of membrane proteins.

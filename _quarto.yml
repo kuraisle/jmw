@@ -12,6 +12,8 @@ website:
         text: Papers
       - href: data-analysis/index.qmd
         text: Data Analysis
+      - href: cv.qmd
+        text: CV
 format:
   html:
     theme: flatly

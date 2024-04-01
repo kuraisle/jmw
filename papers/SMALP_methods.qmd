@@ -4,6 +4,9 @@ format: html
 description: A review of methods for resuspending membrane proteins in SMALPs
 date-format: iso
 date: 2022-07-01
+categories:
+  - review
+  - postdoc
 ---
 
 In my postdoctoral research, I spent a great deal of time and effort improving the process of producing purified sample of our protein of interest, ABCG2. For a lot of experiments, membrane proteins need to be resuspended in aqueous solution (slightly salty water). The proteins don't like being by themselves in these solutions, so need to either take a bit of membrane with them or something to mimic it. In the past, this was often detergent (fancy, very expensive soap), which often required testing a lot of detergents (again, expensive), and made the environment that the protein was in less like its normal home.

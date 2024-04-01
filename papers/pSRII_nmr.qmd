@@ -4,6 +4,9 @@ format: html
 description: This paper establishes sensory rhodopsin II as a model for membrane protein folding by using NMR to measure the changes to different residues upon unfolding
 date-format: iso
 date: 2019-07-12
+categories:
+  - research article
+  - PhD
 ---
 
 This is a partner paper to the [other sensory rhodopsin paper](pSRII_abs.qmd). Yi-Lei was an experimental powerhouse for these papers, and the manuscript goes through the results in extraordinary detail. In my thesis, I used PCA to show that the general trends in chemical shift changes could be related to the concentration of SDS used, but this didn't make it into the paper.

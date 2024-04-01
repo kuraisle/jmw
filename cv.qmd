@@ -1,0 +1,43 @@
+---
+title: Curriculum Vitae
+toc: false
+---
+I worked as a biochemist, both in academia and industry, for about nine years. During my PhD, I started using code to analyse my data, and using [machine learning](papers/pSRII_abs.qmd) to find patterns^[At the time, I kept finding myself reading about machine learning and thinking "isn't this just stats?"]. As well as continuing my development as a wet-lab scientist, I also improved my skills in machine learning and [bioinformatics](papers/functional divergence.qmd). I was really excited to have the opportunity to put my own stamp on each of my academic projects, including bringing image analysis and deep learning into my experiments^[papers in preparation]. My time working in a pharmaceutical contract research organisation gave me a new appreciation for the challenges of working with larger datasets. I'm keen to bring the expertise my research experience has given to new, data-focused projects.
+
+## Professional History
+
+### Excellerate Biosciences
+ | |
+:---|---:|
+ Senior Scientist | October 2022 - April 2023 |
+
+In my most recent job, I ran *in vitro* screening assays for clients and developed new assays. As well as being responsible for routine analysis of screening data, I also carried out bespoke analyses as required, often preparing material for client meetings.
+
+
+### University of Nottingham
+ | |
+:---|---:|
+Postdoctoral Research Fellow | February 2019 - September 2022
+
+I worked as a postdoc on a project investigating the transport pathway of the multidrug transporter, ABCG2. I was lucky that the investigators on the grant were open to new ideas, so I developed [novel assays](papers/abcg2_tr-fret.qmd) and [novel bioinformatics methods](papers/functional divergence.qmd) as part of my work. This included bringing supervised and unsupervised machine learning into the analysis of biological data. I also really enjoyed being able to make GUIs to help colleagues without coding experience use tools, and develop interactive dashboards to communicate results. I presented work from this project at national and international conferences, and some has been published^[I should probably be writing the rest right now!].
+
+### University of Warwick
+ | |
+:---|---:|
+PhD, Medical Sciences | September 2014 - April 2018
+BSc, Biochemistry | September 2011 - June 2014
+
+My PhD project developed rhodopsin as an experimental system for [membrane protein folding](papers/rhodopsin_encyclopedia.qmd). Part of this involved characterising misfolding [mutants](papers/retinitis_pigmentosa_mutants.qmd), and a detour into characterising the interactions between rhodopsin and a [small molecule](papers/chlorin_e6.qmd). I was also part of a really fruitful collaboration with scientists at the University of Cambridge. This all gave me a solid grounding in the application of biophysical methods, as well as my first taste of how satisfying it can be to carry out the right analysis for your data.
+
+## Tools
+
+### Python
+I'm most comfortable carrying out tasks in python, with plenty of experience with the usual suspects in a data toolkit^[pandas, numpy, scikit-learn, matplotlib]. If you look in my [projects](data-analysis/index.qmd), you'll see some more unusual libraries being used, which are just the tip of an iceberg of tools I've picked up once or twice.
+### Javascript
+I found javascript quite hard to begin with, and some parts of it still seem pretty weird to me. However, I really like the functional features that have been brought in, and if you want to make something interactive to share with people, it can't be beaten!
+### R
+My first forays into code were with R, simply because the one biologist I knew well who could code used it^[Hi, Joan!]. I miss it sometimes, and the tidyverse is a lovely bit of joined-up design for handling data.
+### Microsoft stuff
+It's hard to work anywhere people do stuff with numbers without encountering Excel. I have always been pretty comfortable with it, and in my last job I got a lot more comfortable with its more advanced features. This included writing a fair bit of VBA, which I will do if you ask very nicely. In the time since, I dug a bit deeper into Microsoft's offerings, and I'm capable with Power BI and Power Query.
+### SQL
+I had read online about how SQL and relational databases were old fashioned and going to be obsolete. Then I read a bit, and designed a database, and the ideas behind relational databases like normalisation just felt very satisfying. I'm no SQL wizard, but I can create a useful [data model](data-analysis/spreadsheet_prison_database.qmd) and write a moderately complex [query](data-analysis/prison_map_move_from_plotly.qmd).

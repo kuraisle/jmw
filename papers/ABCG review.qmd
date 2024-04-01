@@ -4,6 +4,9 @@ format: html
 description: A review of the differences between ABCG family transporters
 date-format: iso
 date: 2020-09-26
+categories:
+  - review
+  - postdoc
 ---
 
 For this review I got to work with some of the big names in the field of transmembrane transporters, and with some very driven fellow junior researchers. Sadly, as this was in 2020, we couldn't have the discussions in person, but I still had a great time listening to the big-brains talking and frantically trying to take some notes.

@@ -4,6 +4,9 @@ format: html
 description: Using information theory to explore differences in a protein family
 date-format: iso
 date: 2021-03-16
+categories:
+  - research article
+  - postdoc
 ---
 
 While I was helping to write [this review](ABCG%20review.qmd), I was given a section to write looking at the sequence differences between ABCG2 and ABCG5/G8. Normally I would just have aligned the sequences, had a look at some likely spots for functional differences and left it there. As it was lockdown, I had the time to think about the question more deeply. If you just align two sequences, any differences you see might just be normal, random variation. However, if you align a lot of sequences, you can start to make better inferences about what the differences might mean.

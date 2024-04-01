@@ -27,13 +27,21 @@ from re import sub
 ```
 The [Genomics of Drug Sensitivity in Cancer](https://www.cancerrxgene.org/) dataset is a massive project testing the sensitivity of tumour cell lines to different drugs.
 
+- Expression to IC50
+- Expression IC50 adding weights
+- Expression IC50 transporters
+- Expression IC50 transporters optuna params
+- Filter IC50 by count
+- Explore GDSC1
+- Cluster gene density
+- Expression IC50 unclustered
 
 ```{python}
 # It seems that previous releases get moved, so I'm just downloading it locally instead of getting it via ftp
 #ic50_data = pd.read_excel("ftp://ftp.sanger.ac.uk/pub/project/cancerrxgene/releases/current_release/GDSC1_fitted_dose_response_25Feb20.xlsx")
 ic50_data = pd.read_excel("data/GDSC1_fitted_dose_response_27Oct23.xlsx")
-ic50_data.drop(columns = ['NLME_RESULT_ID', 'NLME_CURVE_ID', 'SANGER_MODEL_ID', 'TCGA_DESC', 'DRUG_ID', 'PUTATIVE_TARGET', 'PATHWAY_NAME', 'COMPANY_ID', 'WEBRELEASE', 'MIN_CONC', 'MAX_CONC', 'AUC', 'RMSE', 'Z_SCORE'], inplace=True)
-ic50_data
+ic50_data.drop(columns = ['NLME_RESULT_ID', 'NLME_CURVE_ID', 'SANGER_MODEL_ID', 'TCGA_DESC', 'DRUG_ID', 'PUTATIVE_TARGET', 'PATHWAY_NAME', 'COMPANY_ID', 'WEBRELEASE', 'MIN_CONC', 'MAX_CONC', 'AUC', 'RMSE'], inplace=True)
+ic50_data.head()
 ```
 
 ```{python}
@@ -42,4 +50,153 @@ ic50_data
 rma_expr = pd.read_csv("data/Cell_line_RMA_proc_basalExp.txt", sep = "\t")
 rma_expr = rma_expr.drop('GENE_title', axis = 1)
 rma_expr= rma_expr.set_index('GENE_SYMBOLS')
+rma_expr.head()
+```
+
+```{python}
+rma_cells = [int(x.split('.')[1]) for x in rma_expr.columns]
+cell_id_matches = []
+
+for cell_id in rma_cells:
+    if cell_id in ic50_data['COSMIC_ID'].values:
+        cell_id_matches.append(cell_id)
+        
+print(f'Number of matches: {len(cell_id_matches)} of {len(rma_cells)}')
+```
+
+```{python}
+rma_matches = np.isin(np.array(rma_cells), np.array(cell_id_matches))
+
+rma_expr_matched = rma_expr.iloc[:,rma_matches]
+rma_expr_matched.shape
+```
+
+```{python}
+ic50_matched = ic50_data.loc[ic50_data['COSMIC_ID'].isin(cell_id_matches)]
+ic50_matched
+```
+
+```{python}
+len(ic50_matched['DRUG_NAME'].unique())
+```
+
+```{python}
+rma_expr_matched = rma_expr_matched.T
+rma_expr_matched['COSMIC_ID'] = [int(x.split('.')[1]) for x in rma_expr_matched.index]
+rma_expr_matched = rma_expr_matched.loc[:, rma_expr_matched.columns.notna()]
+rma_expr_matched.head()
+```
+
+```{python}
+def model_drug(drug, verbose = False, figure = False):
+    ic50_sub = ic50_matched.loc[ic50_matched['DRUG_NAME'] == drug][['COSMIC_ID',
+                                                                    'LN_IC50',
+                                                                    'Z_SCORE']]
+    df = pd.merge(ic50_sub, rma_expr_matched).set_index('COSMIC_ID')
+    
+    X = df.drop(['LN_IC50', 'Z_SCORE'], axis = 1)
+    y = df['LN_IC50']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+    
+    train_data = lightgbm.Dataset(X_train, label = y_train)
+    test_data = lightgbm.Dataset(X_test, label = y_test, reference = train_data)
+    
+    param = {'boosting_type': 'goss',
+             'n_estimators': 500,
+             'num_iterations': 500,
+             'learning_rate': 0.05,
+             'max_bin': 1024,
+             'metric': 'l2',
+             'objective': 'regression',
+             'num_leaves': 50,
+             'verbose': -1}
+    
+    bst = lightgbm.train(param,
+                         train_data,
+                         callbacks=[lightgbm.early_stopping(stopping_rounds=30, verbose = False)],
+                         valid_sets = test_data)
+    
+    fit_predict = bst.predict(X_test)
+    if verbose:
+        mae = mean_absolute_error(fit_predict, y_test)
+        test_range = max(y_test)-min(y_test)
+        print(f'{drug}:\nMAE = {mae:.3} (range {test_range:.3})')
+    if figure:
+        fig, ax = plt.subplots(figsize = (16,8), ncols = 2)
+        ax[0].scatter(y_test, fit_predict, color = 'black', alpha = 0.5)
+        ax[0].ylabel = 'Predicted ln(IC50)'
+        ax[0].xlabel = 'True ln(IC50)'
+        ax[0].set_title(drug)
+        lightgbm.plot_importance(bst, max_num_features=20, ax = ax[1])
+        if figure == 'save':
+            filename = sub('[^A-Za-z0-9-]+', '', drug)
+            plt.savefig(f'{filename}.png')
+    return bst, fit_predict, y_test
+
+
+#all_models = dict()
+
+#for drug in ic50_matched['DRUG_NAME'].unique():
+#    all_models[drug] = model_drug(drug)
+
+example_drugs = ['AZ628', 'WZ3105', 'NPK76-II-72-1', 'Tubastatin A', 'PIK-93', 'Venotoclax', 'Methotrexate', 'Refametinib', 'AZD7762', 'Tanespimycin', 'Nutlin-3a (-)', 'Trametinib', 'Dabrafenib','SN-38', 'Erlotinib']
+
+example_models = dict()
+
+for drug in example_drugs:
+  example_models[drug] = model_drug(drug)
+```
+
+```{python}
+def r_squared(predicted, true):
+    mean = np.mean(true)
+    true_diff_sq = np.square(true - mean)
+    pred_diff_sq = np.square(true - predicted)
+    return 1-(np.sum(pred_diff_sq)/np.sum(true_diff_sq))
+
+models_r_sq = dict([(x, r_squared(y[1], y[2])) for x, y in example_models.items()])
+
+[(x,y) for x,y in models_r_sq.items() if y > 0.4]
+```
+
+```{python}
+def plot_test(drug):
+    bst, fit_predict, y_test = example_models[drug]
+    fig, ax = plt.subplots(figsize = (16,8), ncols = 2)
+    ax[0].scatter(y_test, fit_predict, color = 'black', alpha = 0.5)
+    ax[0].ylabel = 'Predicted ln(IC50)'
+    ax[0].xlabel = 'True ln(IC50)'
+    ax[0].set_title(drug)
+    lightgbm.plot_importance(bst, max_num_features=20, ax = ax[1])
+```
+
+```{python}
+plot_test('AZ628')
+```
+
+```{python}
+plot_test('Erlotinib')
+```
+
+```{python}
+shap.initjs()
+```
+
+```{python}
+def prep_data(drug):
+    ic50_sub = ic50_matched.loc[ic50_matched['DRUG_NAME'] == drug][['COSMIC_ID',
+                                                                    'LN_IC50',
+                                                                    'Z_SCORE']]
+    df = pd.merge(ic50_sub, rma_expr_matched).set_index('COSMIC_ID')
+    
+    return df.drop(['LN_IC50', 'Z_SCORE'], axis = 1)
+
+def plot_shap(drug):
+    model = all_models[drug][0]
+    X = prep_data(drug)
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X)
+    shap.summary_plot(shap_values, X, title = drug)
+
+plot_shap('AZ628')
 ```

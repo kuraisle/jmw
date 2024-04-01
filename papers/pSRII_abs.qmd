@@ -4,6 +4,9 @@ format: html
 description: Sensory rhodopsin II makes a good model for the folding of some membrane proteins. This paper uses biophysical techniques to characterize parts of its folding mechanism.
 date-format: iso
 date: 2018-10-19
+categories:
+  - research article
+  - PhD
 ---
 
 

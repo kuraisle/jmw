@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-27">
+<meta name="dcterms.date" content="2024-04-01">
 <meta name="description" content="As practice for using gradient boosted trees, I used an open dataset to use gene expression in tumours to predict resistance to chemotherapy drugs">
 
 <title>James Mitchell-White - Predicting drug resistance from gene expression</title>
@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="../data-analysis/index.html"> 
 <span class="menu-text">Data Analysis</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
           <div class="quarto-navbar-tools">
@@ -177,7 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">2024-03-27</p>
+      <p class="date">2024-04-01</p>
     </div>
   </div>
   
@@ -189,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div id="c25e0b6c" class="cell" data-execution_count="1">
+<div id="5894ffae" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
@@ -204,14 +208,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </details>
 </div>
 <p>The <a href="https://www.cancerrxgene.org/">Genomics of Drug Sensitivity in Cancer</a> dataset is a massive project testing the sensitivity of tumour cell lines to different drugs.</p>
-<div id="0cf8aed1" class="cell" data-execution_count="2">
+<ul>
+<li>Expression to IC50</li>
+<li>Expression IC50 adding weights</li>
+<li>Expression IC50 transporters</li>
+<li>Expression IC50 transporters optuna params</li>
+<li>Filter IC50 by count</li>
+<li>Explore GDSC1</li>
+<li>Cluster gene density</li>
+<li>Expression IC50 unclustered</li>
+</ul>
+<div id="af371020" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># It seems that previous releases get moved, so I'm just downloading it locally instead of getting it via ftp</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#ic50_data = pd.read_excel("ftp://ftp.sanger.ac.uk/pub/project/cancerrxgene/releases/current_release/GDSC1_fitted_dose_response_25Feb20.xlsx")</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ic50_data <span class="op">=</span> pd.read_excel(<span class="st">"data/GDSC1_fitted_dose_response_27Oct23.xlsx"</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ic50_data.drop(columns <span class="op">=</span> [<span class="st">'NLME_RESULT_ID'</span>, <span class="st">'NLME_CURVE_ID'</span>, <span class="st">'SANGER_MODEL_ID'</span>, <span class="st">'TCGA_DESC'</span>, <span class="st">'DRUG_ID'</span>, <span class="st">'PUTATIVE_TARGET'</span>, <span class="st">'PATHWAY_NAME'</span>, <span class="st">'COMPANY_ID'</span>, <span class="st">'WEBRELEASE'</span>, <span class="st">'MIN_CONC'</span>, <span class="st">'MAX_CONC'</span>, <span class="st">'AUC'</span>, <span class="st">'RMSE'</span>, <span class="st">'Z_SCORE'</span>], inplace<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ic50_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ic50_data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="2">
 <div>
@@ -269,70 +283,204 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Erlotinib</td>
 <td>2.966007</td>
 </tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">333156</td>
-<td>GDSC1</td>
-<td>1659823</td>
-<td>SNU-1040</td>
-<td>I-CBP112</td>
-<td>5.085294</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">333157</td>
-<td>GDSC1</td>
-<td>1660035</td>
-<td>SNU-61</td>
-<td>I-CBP112</td>
-<td>5.725399</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">333158</td>
-<td>GDSC1</td>
-<td>1660036</td>
-<td>SNU-81</td>
-<td>I-CBP112</td>
-<td>4.930753</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">333159</td>
-<td>GDSC1</td>
-<td>1674021</td>
-<td>SNU-C5</td>
-<td>I-CBP112</td>
-<td>4.551784</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">333160</td>
-<td>GDSC1</td>
-<td>1789883</td>
-<td>DiFi</td>
-<td>I-CBP112</td>
-<td>4.681069</td>
-</tr>
 </tbody>
 </table>
 
-<p>333161 rows × 5 columns</p>
 </div>
 </div>
 </div>
-<div id="0ea59857" class="cell" data-execution_count="3">
+<div id="b019f2a3" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># I did have it downloading directly from the source, but I've had failures retrieving it and the IC50 data, so I'm loading it locally instead</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#rma_expr = pd.read_csv("https://www.cancerrxgene.org/gdsc1000/GDSC1000_WebResources//Data/preprocessed/Cell_line_RMA_proc_basalExp.txt.zip", sep = "\t")</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>rma_expr <span class="op">=</span> pd.read_csv(<span class="st">"data/Cell_line_RMA_proc_basalExp.txt"</span>, sep <span class="op">=</span> <span class="st">"</span><span class="ch">\t</span><span class="st">"</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>rma_expr <span class="op">=</span> rma_expr.drop(<span class="st">'GENE_title'</span>, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>rma_expr<span class="op">=</span> rma_expr.set_index(<span class="st">'GENE_SYMBOLS'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>rma_expr<span class="op">=</span> rma_expr.set_index(<span class="st">'GENE_SYMBOLS'</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>rma_expr.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">DATA.906826</th>
+<th data-quarto-table-cell-role="th">DATA.687983</th>
+<th data-quarto-table-cell-role="th">DATA.910927</th>
+<th data-quarto-table-cell-role="th">DATA.1240138</th>
+<th data-quarto-table-cell-role="th">DATA.1240139</th>
+<th data-quarto-table-cell-role="th">DATA.906792</th>
+<th data-quarto-table-cell-role="th">DATA.910688</th>
+<th data-quarto-table-cell-role="th">DATA.1240135</th>
+<th data-quarto-table-cell-role="th">DATA.1290812</th>
+<th data-quarto-table-cell-role="th">DATA.907045</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">DATA.753584</th>
+<th data-quarto-table-cell-role="th">DATA.907044</th>
+<th data-quarto-table-cell-role="th">DATA.998184</th>
+<th data-quarto-table-cell-role="th">DATA.908145</th>
+<th data-quarto-table-cell-role="th">DATA.1659787</th>
+<th data-quarto-table-cell-role="th">DATA.1298157</th>
+<th data-quarto-table-cell-role="th">DATA.1480372</th>
+<th data-quarto-table-cell-role="th">DATA.1298533</th>
+<th data-quarto-table-cell-role="th">DATA.930299</th>
+<th data-quarto-table-cell-role="th">DATA.905954.1</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">GENE_SYMBOLS</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">TSPAN6</td>
+<td>7.632023</td>
+<td>7.548671</td>
+<td>8.712338</td>
+<td>7.797142</td>
+<td>7.729268</td>
+<td>7.074533</td>
+<td>3.285198</td>
+<td>6.961606</td>
+<td>5.943046</td>
+<td>3.455951</td>
+<td>...</td>
+<td>7.105637</td>
+<td>3.236503</td>
+<td>3.038892</td>
+<td>8.373223</td>
+<td>6.932178</td>
+<td>8.441628</td>
+<td>8.422922</td>
+<td>8.089255</td>
+<td>3.112333</td>
+<td>7.153127</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">TNMD</td>
+<td>2.964585</td>
+<td>2.777716</td>
+<td>2.643508</td>
+<td>2.817923</td>
+<td>2.957739</td>
+<td>2.889677</td>
+<td>2.828203</td>
+<td>2.874751</td>
+<td>2.686874</td>
+<td>3.290184</td>
+<td>...</td>
+<td>2.798847</td>
+<td>2.745137</td>
+<td>2.976406</td>
+<td>2.852552</td>
+<td>2.622630</td>
+<td>2.639276</td>
+<td>2.879890</td>
+<td>2.521169</td>
+<td>2.870468</td>
+<td>2.834285</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">DPM1</td>
+<td>10.379553</td>
+<td>11.807341</td>
+<td>9.880733</td>
+<td>9.883471</td>
+<td>10.418840</td>
+<td>9.773987</td>
+<td>10.264385</td>
+<td>10.205931</td>
+<td>10.299757</td>
+<td>11.570155</td>
+<td>...</td>
+<td>10.486486</td>
+<td>10.442951</td>
+<td>10.311962</td>
+<td>10.454830</td>
+<td>10.418475</td>
+<td>11.463742</td>
+<td>10.557777</td>
+<td>10.792750</td>
+<td>9.873902</td>
+<td>10.788218</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">SCYL3</td>
+<td>3.614794</td>
+<td>4.066887</td>
+<td>3.956230</td>
+<td>4.063701</td>
+<td>4.341500</td>
+<td>4.270903</td>
+<td>5.968168</td>
+<td>3.715033</td>
+<td>3.848112</td>
+<td>5.560883</td>
+<td>...</td>
+<td>3.696835</td>
+<td>4.624013</td>
+<td>4.348524</td>
+<td>3.858121</td>
+<td>3.947561</td>
+<td>4.425849</td>
+<td>3.550390</td>
+<td>4.443337</td>
+<td>4.266828</td>
+<td>4.100493</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">C1orf112</td>
+<td>3.380681</td>
+<td>3.732485</td>
+<td>3.236620</td>
+<td>3.558414</td>
+<td>3.840373</td>
+<td>3.815055</td>
+<td>3.011867</td>
+<td>3.268449</td>
+<td>3.352835</td>
+<td>3.571228</td>
+<td>...</td>
+<td>3.726833</td>
+<td>3.947744</td>
+<td>3.806584</td>
+<td>3.196988</td>
+<td>3.814831</td>
+<td>4.384732</td>
+<td>4.247189</td>
+<td>3.071359</td>
+<td>3.230197</td>
+<td>3.435795</td>
+</tr>
+</tbody>
+</table>
+
+<p>5 rows × 1018 columns</p>
+</div>
+</div>
 </div>
 
 

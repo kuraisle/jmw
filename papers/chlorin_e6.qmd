@@ -4,6 +4,9 @@ format: html
 description: Deep-sea fish use a molecule derived from chlorophyll to see into the far red. This paper explores the interaction between this molecule and rhodopsin
 date-format: iso
 date: 2018-12-24
+categories:
+  - research article
+  - PhD
 ---
 
 One day, my German-American PhD supervisor called me into her office and asked if I could get her in touch with David Attenborough. I had to explain that, sadly, David Attenborough is really second only to the royal family over here, and getting a direct line would be tricky.

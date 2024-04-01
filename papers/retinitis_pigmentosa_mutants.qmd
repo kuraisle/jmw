@@ -4,6 +4,9 @@ format: html
 description: Mutants of rhodopsin that destabilize it can cause diseases of vision. This compares biochemical and biophysical properties of these mutants
 date-format: iso
 date: 2019-05-17
+categories:
+  - research article
+  - PhD
 ---
 
 My PhD supervisor had a long-standing collaboration with a clinical colleague, which I was delighted to contribute to.
