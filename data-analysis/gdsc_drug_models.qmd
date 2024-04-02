@@ -6,10 +6,10 @@ format:
     code-summary: "Show the code"
 description: As practice for using gradient boosted trees, I used an open dataset to use gene expression in tumours to predict resistance to chemotherapy drugs
 date-format: iso
-date: today
+date: 2024-04-02
 categories:
   - data analysis
-draft: true
+  - gdsc
 execute:
     freeze: true
 ---
@@ -25,8 +25,12 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.linear_model import LinearRegression
 from re import sub
 ```
-The [Genomics of Drug Sensitivity in Cancer](https://www.cancerrxgene.org/) dataset is a massive project testing the sensitivity of tumour cell lines to different drugs.
+This is a bit of work I did during my postdoc at the University of Nottingham. There's not enough here for a publication, and was a bit out of the scope of the project, so I'm writing it up here. I'm not reproducing the entirety of this work here, mostly because running the whole thing takes ages. The full workflow is still in the code, I have just commented parts of it out. If you do want to run the full analysis yourself, you can uncomment these lines and change a few variable names.
 
+I went to a conference^[The International Transmembrane Society Symposium] and heard a talk^[by Emily Barnes at the MRC Laboratory of Medical Sciences] in which the speaker described using a dataset of tumour cell lines to identify proteins important in cancer to identify a target to study.
+The [Genomics of Drug Sensitivity in Cancer](https://www.cancerrxgene.org/) dataset is a massive project testing the sensitivity of tumour cell lines to different drugs. Part of the dataset is a table describing how sensitive cell lines are to each of a few hundred drugs.
+
+<!---
 - Expression to IC50
 - Expression IC50 adding weights
 - Expression IC50 transporters
@@ -35,7 +39,7 @@ The [Genomics of Drug Sensitivity in Cancer](https://www.cancerrxgene.org/) data
 - Explore GDSC1
 - Cluster gene density
 - Expression IC50 unclustered
-
+--->
 ```{python}
 # It seems that previous releases get moved, so I'm just downloading it locally instead of getting it via ftp
 #ic50_data = pd.read_excel("ftp://ftp.sanger.ac.uk/pub/project/cancerrxgene/releases/current_release/GDSC1_fitted_dose_response_25Feb20.xlsx")
@@ -43,6 +47,12 @@ ic50_data = pd.read_excel("data/GDSC1_fitted_dose_response_27Oct23.xlsx")
 ic50_data.drop(columns = ['NLME_RESULT_ID', 'NLME_CURVE_ID', 'SANGER_MODEL_ID', 'TCGA_DESC', 'DRUG_ID', 'PUTATIVE_TARGET', 'PATHWAY_NAME', 'COMPANY_ID', 'WEBRELEASE', 'MIN_CONC', 'MAX_CONC', 'AUC', 'RMSE'], inplace=True)
 ic50_data.head()
 ```
+
+I'm just using the first version of the dataset here, as shown by "GDSC1" in the `DATASET` column. There is a GDSC2 that could be added, but we have enough to be getting on with. The `COSMIC_ID` and `CELL_LINE_NAME` columns identify the cell line used in the experiment. `DRUG_NAME` should be fairly obvious.
+
+The last two columns might be a bit less familiar. To explain these, I will have to be a little more precise about what "sensitivity" means. To create this dataset, the experimenters grew lots of samples of each cell line, and added different concentrations of drugs to the samples. They then let them grow for a bit, and counted how many were still viable (alive and able to keep going). They then analysed this data to see how much each concentration of the drug slowed the growth of cells. They then fitted this to a dose response curve to get an estimate of the concentration of the drug that inhibited growth by 50, a measure called the IC<sub>50</sub>. This measure is best described using a natural logarithm, so this is reported as `LN_IC50`. If you want to get a better feel for dose-response curves, I have a toy [here](making_a_dose_respons_curve.qmd). The `Z_SCORE` describes how significant this difference is for that cell line, compared with the sensitivity of other cell lines to that drug.
+
+Another part of the dataset is a measure of how genes are expressed in each cell line. For each of the cell lines in the dataset, the mRNA for each gene has been measured using a microarray.
 
 ```{python}
 # I did have it downloading directly from the source, but I've had failures retrieving it and the IC50 data, so I'm loading it locally instead
@@ -53,6 +63,10 @@ rma_expr= rma_expr.set_index('GENE_SYMBOLS')
 rma_expr.head()
 ```
 
+In this table, each row is a gene, and each column shows the expression of that gene in a cell line. This data can be used with the drug sensitivity dataset using the `COSMIC_ID` column of that dataset. The column names in the expression table contain the COSMIC ID (`DATA.[COSMIC ID]`).
+
+We can see how many of the cell lines described in the expression table are present in the sensitivity table.
+
 ```{python}
 rma_cells = [int(x.split('.')[1]) for x in rma_expr.columns]
 cell_id_matches = []
@@ -60,9 +74,11 @@ cell_id_matches = []
 for cell_id in rma_cells:
     if cell_id in ic50_data['COSMIC_ID'].values:
         cell_id_matches.append(cell_id)
-        
+
 print(f'Number of matches: {len(cell_id_matches)} of {len(rma_cells)}')
 ```
+
+And filter the expression data so we're only using columns that are relevant to the cell lines of interest.
 
 ```{python}
 rma_matches = np.isin(np.array(rma_cells), np.array(cell_id_matches))
@@ -71,14 +87,22 @@ rma_expr_matched = rma_expr.iloc[:,rma_matches]
 rma_expr_matched.shape
 ```
 
+Then carry out a similar operation on the sensitivity table
+
 ```{python}
 ic50_matched = ic50_data.loc[ic50_data['COSMIC_ID'].isin(cell_id_matches)]
-ic50_matched
+ic50_matched.head()
 ```
+
+How many drugs does that leave us with?
 
 ```{python}
 len(ic50_matched['DRUG_NAME'].unique())
 ```
+
+What's the plan here? A lot of statistical analysis has been carried out on this dataset by bioinformaticians much smarter than I am. What I want to get an idea of is how well this dataset can be used to predict drug sensitivity from expression data. In this first pass, I'm getting a baseline. There are things you can do to improve models like this, which I have carried out, but let's pretend, for the sake of narrative, that I haven't yet.
+
+To use this data to train a predictive model, we really want a table where each row is a cell line, and each column is a gene.
 
 ```{python}
 rma_expr_matched = rma_expr_matched.T
@@ -87,20 +111,31 @@ rma_expr_matched = rma_expr_matched.loc[:, rma_expr_matched.columns.notna()]
 rma_expr_matched.head()
 ```
 
+I'm going to use a kind of model called ["Gradient Boosted Trees"](https://en.wikipedia.org/wiki/Gradient_boosting) to predict drug sensitivity here. I won't go into too much detail on how they work (Google has a course on them [here](https://developers.google.com/machine-learning/decision-forests)), but essentially they build up a model from a set of small models called decision trees. It starts with a simple decision tree, then adds another simple decision tree to the output of that one that is chosen to best deal with the shortcomings of the previous. This process is repeated until adding more trees doesn't improve prediction very much. These models perform really well on small, structured datasets, so are a good choice here. The implementation I'm using is called [LightGBM](https://lightgbm.readthedocs.io/en/stable/), which, from my understanding, makes models that are nearly as good as gradient boosted trees can be, but are relatively fast.
+
+For each drug, my `model_drug` function takes the IC<sub>50</sub> data matching that drug, then merges that data with matching data from the expression table.
+
+It then splits this into a training and test set. The training set contains 80% of the data. The decision trees are built based on this data, then the model's performance is assessed on how well it predicts the IC<sub>50</sub> in the remaining 20%.
+
+In my first run at this, I trained a model for each of the drugs in the dataset. To do this, I had to start it when I got in one morning, go do a day's work in the lab, then come back to collect the results. Here, I've just chosen 14 drugs that (spoiler alert) do well here, and one that I know doesn't. If you want to check my work, the code for running the whole lot is still in there.
+
+For each drug, the Mean Absolute Error of the model and the range of ln(IC<sub>50</sub>) in the test set are reported.
+
 ```{python}
+#| warning: false
 def model_drug(drug, verbose = False, figure = False):
     ic50_sub = ic50_matched.loc[ic50_matched['DRUG_NAME'] == drug][['COSMIC_ID',
                                                                     'LN_IC50',
                                                                     'Z_SCORE']]
     df = pd.merge(ic50_sub, rma_expr_matched).set_index('COSMIC_ID')
-    
+
     X = df.drop(['LN_IC50', 'Z_SCORE'], axis = 1)
     y = df['LN_IC50']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
-    
+
     train_data = lightgbm.Dataset(X_train, label = y_train)
     test_data = lightgbm.Dataset(X_test, label = y_test, reference = train_data)
-    
+
     param = {'boosting_type': 'goss',
              'n_estimators': 500,
              'num_iterations': 500,
@@ -110,12 +145,12 @@ def model_drug(drug, verbose = False, figure = False):
              'objective': 'regression',
              'num_leaves': 50,
              'verbose': -1}
-    
+
     bst = lightgbm.train(param,
                          train_data,
                          callbacks=[lightgbm.early_stopping(stopping_rounds=30, verbose = False)],
                          valid_sets = test_data)
-    
+
     fit_predict = bst.predict(X_test)
     if verbose:
         mae = mean_absolute_error(fit_predict, y_test)
@@ -144,8 +179,10 @@ example_drugs = ['AZ628', 'WZ3105', 'NPK76-II-72-1', 'Tubastatin A', 'PIK-93', '
 example_models = dict()
 
 for drug in example_drugs:
-  example_models[drug] = model_drug(drug)
+  example_models[drug] = model_drug(drug, verbose=True)
 ```
+
+The R<sup>2</sup> value describes how much of the variance of a dependent variable can be explained by the independent variable. I'm using it here to get an idea of how well the predictions from the models correlate with the observations.
 
 ```{python}
 def r_squared(predicted, true):
@@ -159,6 +196,8 @@ models_r_sq = dict([(x, r_squared(y[1], y[2])) for x, y in example_models.items(
 [(x,y) for x,y in models_r_sq.items() if y > 0.4]
 ```
 
+Not bad for a first go. Here's what a plot of the predicted vs observed values looks like for Refametinib, which can be predicted pretty well.
+
 ```{python}
 def plot_test(drug):
     bst, fit_predict, y_test = example_models[drug]
@@ -168,31 +207,38 @@ def plot_test(drug):
     ax[0].xlabel = 'True ln(IC50)'
     ax[0].set_title(drug)
     lightgbm.plot_importance(bst, max_num_features=20, ax = ax[1])
+
+plot_test('Refametinib')
 ```
 
-```{python}
-plot_test('AZ628')
-```
+And for Erlotinib, one that can't (in this first go, at least).
 
 ```{python}
 plot_test('Erlotinib')
 ```
 
+The panels on the left of these plots show this comparison. Hopefully, you'll be wondering what the other panel shows. A neat feature of LightGBM models is that the model can tell you how important different dependent variables are when making a prediction. This means that we can get an idea of how the differential expression of particular genes contributes to the sensitivity of tumour cells to drugs^[to be properly rigourous, we can't really: correlation doesn't imply causation! Without properly designed experiments this is all speculation].
+
+To get a little preview of what I'll do later in^[what will hopefully be] this series, there's a more powerful way of looking at how different variables affect prediction. This is using something called SHAP (SHapley Additive exPlanations) values. I'll go more into these in another post, but here's a plot of SHAP values for the model trying to predict AZ628 sensitivity.
+
 ```{python}
 shap.initjs()
 ```
 
+The colour of a point describes how high the feature (dependent variable) value is, and the x-position is the SHAP value. For example, a high DUSP6 expression value is associated with a more negative SHAP value, meaning a lower IC<sub>50</sub>, so the cell line is more sensitive to AZ628. There's a lot more that can be done with these, but I think this is quite long enough for one post.
+
 ```{python}
+#| warning: false
 def prep_data(drug):
     ic50_sub = ic50_matched.loc[ic50_matched['DRUG_NAME'] == drug][['COSMIC_ID',
                                                                     'LN_IC50',
                                                                     'Z_SCORE']]
     df = pd.merge(ic50_sub, rma_expr_matched).set_index('COSMIC_ID')
-    
+
     return df.drop(['LN_IC50', 'Z_SCORE'], axis = 1)
 
 def plot_shap(drug):
-    model = all_models[drug][0]
+    model = example_models[drug][0]
     X = prep_data(drug)
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X)
@@ -200,3 +246,5 @@ def plot_shap(drug):
 
 plot_shap('AZ628')
 ```
+
+In subsequent posts, I'll be aiming to improve model performance through various avenues, and trying to find whether we can actually make any useful interpretations of these models. They're quite promising. For Refametinib, the model correlates really well with the observed data. This doesn't take into account any factors other than changes in expression, so is quite impressive!

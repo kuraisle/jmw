@@ -16,6 +16,7 @@
   {
     "listing": "/data-analysis/index.html",
     "items": [
+      "/data-analysis/gdsc_drug_models.html",
       "/data-analysis/prison_map_move_from_plotly.html",
       "/data-analysis/spreadsheet_prison_database.html",
       "/data-analysis/confocal_volume.html",
