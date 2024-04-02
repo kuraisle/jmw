@@ -33,11 +33,15 @@ My PhD project developed rhodopsin as an experimental system for [membrane prote
 
 ### Python
 I'm most comfortable carrying out tasks in python, with plenty of experience with the usual suspects in a data toolkit^[pandas, numpy, scikit-learn, matplotlib]. If you look in my [projects](data-analysis/index.qmd), you'll see some more unusual libraries being used, which are just the tip of an iceberg of tools I've picked up once or twice.
+
 ### Javascript
 I found javascript quite hard to begin with, and some parts of it still seem pretty weird to me. However, I really like the functional features that have been brought in, and if you want to make something interactive to share with people, it can't be beaten!
+
 ### R
 My first forays into code were with R, simply because the one biologist I knew well who could code used it^[Hi, Joan!]. I miss it sometimes, and the tidyverse is a lovely bit of joined-up design for handling data.
+
 ### Microsoft stuff
 It's hard to work anywhere people do stuff with numbers without encountering Excel. I have always been pretty comfortable with it, and in my last job I got a lot more comfortable with its more advanced features. This included writing a fair bit of VBA, which I will do if you ask very nicely. In the time since, I dug a bit deeper into Microsoft's offerings, and I'm capable with Power BI and Power Query.
+
 ### SQL
 I had read online about how SQL and relational databases were old fashioned and going to be obsolete. Then I read a bit, and designed a database, and the ideas behind relational databases like normalisation just felt very satisfying. I'm no SQL wizard, but I can create a useful [data model](data-analysis/spreadsheet_prison_database.qmd) and write a moderately complex [query](data-analysis/prison_map_move_from_plotly.qmd).

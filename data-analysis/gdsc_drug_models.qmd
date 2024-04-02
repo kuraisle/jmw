@@ -7,6 +7,7 @@ format:
 description: As practice for using gradient boosted trees, I used an open dataset to use gene expression in tumours to predict resistance to chemotherapy drugs
 date-format: iso
 date: 2024-04-02
+image: refametinib.png
 categories:
   - data analysis
   - gdsc
@@ -15,6 +16,7 @@ execute:
 ---
 
 ```{python}
+#| warning: false
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,7 +52,7 @@ ic50_data.head()
 
 I'm just using the first version of the dataset here, as shown by "GDSC1" in the `DATASET` column. There is a GDSC2 that could be added, but we have enough to be getting on with. The `COSMIC_ID` and `CELL_LINE_NAME` columns identify the cell line used in the experiment. `DRUG_NAME` should be fairly obvious.
 
-The last two columns might be a bit less familiar. To explain these, I will have to be a little more precise about what "sensitivity" means. To create this dataset, the experimenters grew lots of samples of each cell line, and added different concentrations of drugs to the samples. They then let them grow for a bit, and counted how many were still viable (alive and able to keep going). They then analysed this data to see how much each concentration of the drug slowed the growth of cells. They then fitted this to a dose response curve to get an estimate of the concentration of the drug that inhibited growth by 50, a measure called the IC<sub>50</sub>. This measure is best described using a natural logarithm, so this is reported as `LN_IC50`. If you want to get a better feel for dose-response curves, I have a toy [here](making_a_dose_respons_curve.qmd). The `Z_SCORE` describes how significant this difference is for that cell line, compared with the sensitivity of other cell lines to that drug.
+The last two columns might be a bit less familiar. To explain these, I will have to be a little more precise about what "sensitivity" means. To create this dataset, the experimenters grew lots of samples of each cell line, and added different concentrations of drugs to the samples. They then let them grow for a bit, and counted how many were still viable (alive and able to keep going). They then analysed this data to see how much each concentration of the drug slowed the growth of cells. They then fitted this to a dose response curve to get an estimate of the concentration of the drug that inhibited growth by 50, a measure called the IC<sub>50</sub>. This measure is best described using a natural logarithm, so this is reported as `LN_IC50`. If you want to get a better feel for dose-response curves, I have a toy [here](making_a_dose-response_curve.qmd). The `Z_SCORE` describes how significant this difference is for that cell line, compared with the sensitivity of other cell lines to that drug.
 
 Another part of the dataset is a measure of how genes are expressed in each cell line. For each of the cell lines in the dataset, the mRNA for each gene has been measured using a microarray.
 

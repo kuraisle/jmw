@@ -194,7 +194,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div id="cf423e11" class="cell" data-execution_count="1">
+<div id="ec33b7e3" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
@@ -207,9 +207,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> re <span class="im">import</span> sub</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
-<pre><code>Using `tqdm.autonotebook.tqdm` in notebook mode. Use `tqdm.tqdm` instead to force console mode (e.g. in jupyter console)</code></pre>
-</div>
 </div>
 <p>This is a bit of work I did during my postdoc at the University of Nottingham. There’s not enough here for a publication, and was a bit out of the scope of the project, so I’m writing it up here. I’m not reproducing the entirety of this work here, mostly because running the whole thing takes ages. The full workflow is still in the code, I have just commented parts of it out. If you do want to run the full analysis yourself, you can uncomment these lines and change a few variable names.</p>
 <p>I went to a conference<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> and heard a talk<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> in which the speaker described using a dataset of tumour cell lines to identify proteins important in cancer to identify a target to study. The <a href="https://www.cancerrxgene.org/">Genomics of Drug Sensitivity in Cancer</a> dataset is a massive project testing the sensitivity of tumour cell lines to different drugs. Part of the dataset is a table describing how sensitive cell lines are to each of a few hundred drugs.</p>
@@ -223,14 +220,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 - Cluster gene density
 - Expression IC50 unclustered
 --->
-<div id="de295213" class="cell" data-execution_count="2">
+<div id="24591efa" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># It seems that previous releases get moved, so I'm just downloading it locally instead of getting it via ftp</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#ic50_data = pd.read_excel("ftp://ftp.sanger.ac.uk/pub/project/cancerrxgene/releases/current_release/GDSC1_fitted_dose_response_25Feb20.xlsx")</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ic50_data <span class="op">=</span> pd.read_excel(<span class="st">"data/GDSC1_fitted_dose_response_27Oct23.xlsx"</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>ic50_data.drop(columns <span class="op">=</span> [<span class="st">'NLME_RESULT_ID'</span>, <span class="st">'NLME_CURVE_ID'</span>, <span class="st">'SANGER_MODEL_ID'</span>, <span class="st">'TCGA_DESC'</span>, <span class="st">'DRUG_ID'</span>, <span class="st">'PUTATIVE_TARGET'</span>, <span class="st">'PATHWAY_NAME'</span>, <span class="st">'COMPANY_ID'</span>, <span class="st">'WEBRELEASE'</span>, <span class="st">'MIN_CONC'</span>, <span class="st">'MAX_CONC'</span>, <span class="st">'AUC'</span>, <span class="st">'RMSE'</span>], inplace<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>ic50_data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># It seems that previous releases get moved, so I'm just downloading it locally instead of getting it via ftp</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#ic50_data = pd.read_excel("ftp://ftp.sanger.ac.uk/pub/project/cancerrxgene/releases/current_release/GDSC1_fitted_dose_response_25Feb20.xlsx")</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ic50_data <span class="op">=</span> pd.read_excel(<span class="st">"data/GDSC1_fitted_dose_response_27Oct23.xlsx"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ic50_data.drop(columns <span class="op">=</span> [<span class="st">'NLME_RESULT_ID'</span>, <span class="st">'NLME_CURVE_ID'</span>, <span class="st">'SANGER_MODEL_ID'</span>, <span class="st">'TCGA_DESC'</span>, <span class="st">'DRUG_ID'</span>, <span class="st">'PUTATIVE_TARGET'</span>, <span class="st">'PATHWAY_NAME'</span>, <span class="st">'COMPANY_ID'</span>, <span class="st">'WEBRELEASE'</span>, <span class="st">'MIN_CONC'</span>, <span class="st">'MAX_CONC'</span>, <span class="st">'AUC'</span>, <span class="st">'RMSE'</span>], inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ic50_data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="2">
 <div>
@@ -303,17 +300,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>I’m just using the first version of the dataset here, as shown by “GDSC1” in the <code>DATASET</code> column. There is a GDSC2 that could be added, but we have enough to be getting on with. The <code>COSMIC_ID</code> and <code>CELL_LINE_NAME</code> columns identify the cell line used in the experiment. <code>DRUG_NAME</code> should be fairly obvious.</p>
-<p>The last two columns might be a bit less familiar. To explain these, I will have to be a little more precise about what “sensitivity” means. To create this dataset, the experimenters grew lots of samples of each cell line, and added different concentrations of drugs to the samples. They then let them grow for a bit, and counted how many were still viable (alive and able to keep going). They then analysed this data to see how much each concentration of the drug slowed the growth of cells. They then fitted this to a dose response curve to get an estimate of the concentration of the drug that inhibited growth by 50, a measure called the IC<sub>50</sub>. This measure is best described using a natural logarithm, so this is reported as <code>LN_IC50</code>. If you want to get a better feel for dose-response curves, I have a toy <a href="making_a_dose_respons_curve.qmd">here</a>. The <code>Z_SCORE</code> describes how significant this difference is for that cell line, compared with the sensitivity of other cell lines to that drug.</p>
+<p>The last two columns might be a bit less familiar. To explain these, I will have to be a little more precise about what “sensitivity” means. To create this dataset, the experimenters grew lots of samples of each cell line, and added different concentrations of drugs to the samples. They then let them grow for a bit, and counted how many were still viable (alive and able to keep going). They then analysed this data to see how much each concentration of the drug slowed the growth of cells. They then fitted this to a dose response curve to get an estimate of the concentration of the drug that inhibited growth by 50, a measure called the IC<sub>50</sub>. This measure is best described using a natural logarithm, so this is reported as <code>LN_IC50</code>. If you want to get a better feel for dose-response curves, I have a toy <a href="../data-analysis/making_a_dose-response_curve.html">here</a>. The <code>Z_SCORE</code> describes how significant this difference is for that cell line, compared with the sensitivity of other cell lines to that drug.</p>
 <p>Another part of the dataset is a measure of how genes are expressed in each cell line. For each of the cell lines in the dataset, the mRNA for each gene has been measured using a microarray.</p>
-<div id="c0318e2a" class="cell" data-execution_count="3">
+<div id="9766209b" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># I did have it downloading directly from the source, but I've had failures retrieving it and the IC50 data, so I'm loading it locally instead</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#rma_expr = pd.read_csv("https://www.cancerrxgene.org/gdsc1000/GDSC1000_WebResources//Data/preprocessed/Cell_line_RMA_proc_basalExp.txt.zip", sep = "\t")</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>rma_expr <span class="op">=</span> pd.read_csv(<span class="st">"data/Cell_line_RMA_proc_basalExp.txt"</span>, sep <span class="op">=</span> <span class="st">"</span><span class="ch">\t</span><span class="st">"</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>rma_expr <span class="op">=</span> rma_expr.drop(<span class="st">'GENE_title'</span>, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>rma_expr<span class="op">=</span> rma_expr.set_index(<span class="st">'GENE_SYMBOLS'</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>rma_expr.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># I did have it downloading directly from the source, but I've had failures retrieving it and the IC50 data, so I'm loading it locally instead</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#rma_expr = pd.read_csv("https://www.cancerrxgene.org/gdsc1000/GDSC1000_WebResources//Data/preprocessed/Cell_line_RMA_proc_basalExp.txt.zip", sep = "\t")</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>rma_expr <span class="op">=</span> pd.read_csv(<span class="st">"data/Cell_line_RMA_proc_basalExp.txt"</span>, sep <span class="op">=</span> <span class="st">"</span><span class="ch">\t</span><span class="st">"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>rma_expr <span class="op">=</span> rma_expr.drop(<span class="st">'GENE_title'</span>, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>rma_expr<span class="op">=</span> rma_expr.set_index(<span class="st">'GENE_SYMBOLS'</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>rma_expr.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
@@ -502,41 +499,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>In this table, each row is a gene, and each column shows the expression of that gene in a cell line. This data can be used with the drug sensitivity dataset using the <code>COSMIC_ID</code> column of that dataset. The column names in the expression table contain the COSMIC ID (<code>DATA.[COSMIC ID]</code>).</p>
 <p>We can see how many of the cell lines described in the expression table are present in the sensitivity table.</p>
-<div id="ae1bb748" class="cell" data-execution_count="4">
+<div id="e4c2e5f2" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rma_cells <span class="op">=</span> [<span class="bu">int</span>(x.split(<span class="st">'.'</span>)[<span class="dv">1</span>]) <span class="cf">for</span> x <span class="kw">in</span> rma_expr.columns]</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>cell_id_matches <span class="op">=</span> []</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cell_id <span class="kw">in</span> rma_cells:</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> cell_id <span class="kw">in</span> ic50_data[<span class="st">'COSMIC_ID'</span>].values:</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        cell_id_matches.append(cell_id)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Number of matches: </span><span class="sc">{</span><span class="bu">len</span>(cell_id_matches)<span class="sc">}</span><span class="ss"> of </span><span class="sc">{</span><span class="bu">len</span>(rma_cells)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rma_cells <span class="op">=</span> [<span class="bu">int</span>(x.split(<span class="st">'.'</span>)[<span class="dv">1</span>]) <span class="cf">for</span> x <span class="kw">in</span> rma_expr.columns]</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>cell_id_matches <span class="op">=</span> []</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cell_id <span class="kw">in</span> rma_cells:</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> cell_id <span class="kw">in</span> ic50_data[<span class="st">'COSMIC_ID'</span>].values:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        cell_id_matches.append(cell_id)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Number of matches: </span><span class="sc">{</span><span class="bu">len</span>(cell_id_matches)<span class="sc">}</span><span class="ss"> of </span><span class="sc">{</span><span class="bu">len</span>(rma_cells)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of matches: 946 of 1018</code></pre>
 </div>
 </div>
 <p>And filter the expression data so we’re only using columns that are relevant to the cell lines of interest.</p>
-<div id="2214ec32" class="cell" data-execution_count="5">
+<div id="f5a00d17" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>rma_matches <span class="op">=</span> np.isin(np.array(rma_cells), np.array(cell_id_matches))</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>rma_expr_matched <span class="op">=</span> rma_expr.iloc[:,rma_matches]</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>rma_expr_matched.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rma_matches <span class="op">=</span> np.isin(np.array(rma_cells), np.array(cell_id_matches))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>rma_expr_matched <span class="op">=</span> rma_expr.iloc[:,rma_matches]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>rma_expr_matched.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>(17737, 946)</code></pre>
 </div>
 </div>
 <p>Then carry out a similar operation on the sensitivity table</p>
-<div id="f7238d48" class="cell" data-execution_count="6">
+<div id="63684ff0" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ic50_matched <span class="op">=</span> ic50_data.loc[ic50_data[<span class="st">'COSMIC_ID'</span>].isin(cell_id_matches)]</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>ic50_matched.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>ic50_matched <span class="op">=</span> ic50_data.loc[ic50_data[<span class="st">'COSMIC_ID'</span>].isin(cell_id_matches)]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ic50_matched.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="6">
 <div>
@@ -609,10 +606,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>How many drugs does that leave us with?</p>
-<div id="b18bfa59" class="cell" data-execution_count="7">
+<div id="5510c0d6" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(ic50_matched[<span class="st">'DRUG_NAME'</span>].unique())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(ic50_matched[<span class="st">'DRUG_NAME'</span>].unique())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <pre><code>378</code></pre>
@@ -620,13 +617,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>What’s the plan here? A lot of statistical analysis has been carried out on this dataset by bioinformaticians much smarter than I am. What I want to get an idea of is how well this dataset can be used to predict drug sensitivity from expression data. In this first pass, I’m getting a baseline. There are things you can do to improve models like this, which I have carried out, but let’s pretend, for the sake of narrative, that I haven’t yet.</p>
 <p>To use this data to train a predictive model, we really want a table where each row is a cell line, and each column is a gene.</p>
-<div id="26ebc177" class="cell" data-execution_count="8">
+<div id="f4ae108a" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>rma_expr_matched <span class="op">=</span> rma_expr_matched.T</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>rma_expr_matched[<span class="st">'COSMIC_ID'</span>] <span class="op">=</span> [<span class="bu">int</span>(x.split(<span class="st">'.'</span>)[<span class="dv">1</span>]) <span class="cf">for</span> x <span class="kw">in</span> rma_expr_matched.index]</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>rma_expr_matched <span class="op">=</span> rma_expr_matched.loc[:, rma_expr_matched.columns.notna()]</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>rma_expr_matched.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rma_expr_matched <span class="op">=</span> rma_expr_matched.T</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>rma_expr_matched[<span class="st">'COSMIC_ID'</span>] <span class="op">=</span> [<span class="bu">int</span>(x.split(<span class="st">'.'</span>)[<span class="dv">1</span>]) <span class="cf">for</span> x <span class="kw">in</span> rma_expr_matched.index]</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>rma_expr_matched <span class="op">=</span> rma_expr_matched.loc[:, rma_expr_matched.columns.notna()]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>rma_expr_matched.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <div>
@@ -794,140 +791,140 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>It then splits this into a training and test set. The training set contains 80% of the data. The decision trees are built based on this data, then the model’s performance is assessed on how well it predicts the IC<sub>50</sub> in the remaining 20%.</p>
 <p>In my first run at this, I trained a model for each of the drugs in the dataset. To do this, I had to start it when I got in one morning, go do a day’s work in the lab, then come back to collect the results. Here, I’ve just chosen 14 drugs that (spoiler alert) do well here, and one that I know doesn’t. If you want to check my work, the code for running the whole lot is still in there.</p>
 <p>For each drug, the Mean Absolute Error of the model and the range of ln(IC<sub>50</sub>) in the test set are reported.</p>
-<div id="ae1de027" class="cell" data-execution_count="9">
+<div id="5f290c9b" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> model_drug(drug, verbose <span class="op">=</span> <span class="va">False</span>, figure <span class="op">=</span> <span class="va">False</span>):</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    ic50_sub <span class="op">=</span> ic50_matched.loc[ic50_matched[<span class="st">'DRUG_NAME'</span>] <span class="op">==</span> drug][[<span class="st">'COSMIC_ID'</span>,</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'LN_IC50'</span>,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'Z_SCORE'</span>]]</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.merge(ic50_sub, rma_expr_matched).set_index(<span class="st">'COSMIC_ID'</span>)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> df.drop([<span class="st">'LN_IC50'</span>, <span class="st">'Z_SCORE'</span>], axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> df[<span class="st">'LN_IC50'</span>]</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size <span class="op">=</span> <span class="fl">0.2</span>)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    train_data <span class="op">=</span> lightgbm.Dataset(X_train, label <span class="op">=</span> y_train)</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    test_data <span class="op">=</span> lightgbm.Dataset(X_test, label <span class="op">=</span> y_test, reference <span class="op">=</span> train_data)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    param <span class="op">=</span> {<span class="st">'boosting_type'</span>: <span class="st">'goss'</span>,</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>             <span class="st">'n_estimators'</span>: <span class="dv">500</span>,</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>             <span class="st">'num_iterations'</span>: <span class="dv">500</span>,</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>             <span class="st">'learning_rate'</span>: <span class="fl">0.05</span>,</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>             <span class="st">'max_bin'</span>: <span class="dv">1024</span>,</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>             <span class="st">'metric'</span>: <span class="st">'l2'</span>,</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>             <span class="st">'objective'</span>: <span class="st">'regression'</span>,</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>             <span class="st">'num_leaves'</span>: <span class="dv">50</span>,</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>             <span class="st">'verbose'</span>: <span class="op">-</span><span class="dv">1</span>}</span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    bst <span class="op">=</span> lightgbm.train(param,</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>                         train_data,</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>                         callbacks<span class="op">=</span>[lightgbm.early_stopping(stopping_rounds<span class="op">=</span><span class="dv">30</span>, verbose <span class="op">=</span> <span class="va">False</span>)],</span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>                         valid_sets <span class="op">=</span> test_data)</span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    fit_predict <span class="op">=</span> bst.predict(X_test)</span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> verbose:</span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>        mae <span class="op">=</span> mean_absolute_error(fit_predict, y_test)</span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        test_range <span class="op">=</span> <span class="bu">max</span>(y_test)<span class="op">-</span><span class="bu">min</span>(y_test)</span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>drug<span class="sc">}</span><span class="ss">:</span><span class="ch">\n</span><span class="ss">MAE = </span><span class="sc">{</span>mae<span class="sc">:.3}</span><span class="ss"> (range </span><span class="sc">{</span>test_range<span class="sc">:.3}</span><span class="ss">)'</span>)</span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> figure:</span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>        fig, ax <span class="op">=</span> plt.subplots(figsize <span class="op">=</span> (<span class="dv">16</span>,<span class="dv">8</span>), ncols <span class="op">=</span> <span class="dv">2</span>)</span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].scatter(y_test, fit_predict, color <span class="op">=</span> <span class="st">'black'</span>, alpha <span class="op">=</span> <span class="fl">0.5</span>)</span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].ylabel <span class="op">=</span> <span class="st">'Predicted ln(IC50)'</span></span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].xlabel <span class="op">=</span> <span class="st">'True ln(IC50)'</span></span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].set_title(drug)</span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>        lightgbm.plot_importance(bst, max_num_features<span class="op">=</span><span class="dv">20</span>, ax <span class="op">=</span> ax[<span class="dv">1</span>])</span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> figure <span class="op">==</span> <span class="st">'save'</span>:</span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>            filename <span class="op">=</span> sub(<span class="st">'[^A-Za-z0-9-]+'</span>, <span class="st">''</span>, drug)</span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>            plt.savefig(<span class="ss">f'</span><span class="sc">{</span>filename<span class="sc">}</span><span class="ss">.png'</span>)</span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> bst, fit_predict, y_test</span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a><span class="co">#all_models = dict()</span></span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="co">#for drug in ic50_matched['DRUG_NAME'].unique():</span></span>
-<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="co">#    all_models[drug] = model_drug(drug)</span></span>
-<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>example_drugs <span class="op">=</span> [<span class="st">'AZ628'</span>, <span class="st">'WZ3105'</span>, <span class="st">'NPK76-II-72-1'</span>, <span class="st">'Tubastatin A'</span>, <span class="st">'PIK-93'</span>, <span class="st">'Venotoclax'</span>, <span class="st">'Methotrexate'</span>, <span class="st">'Refametinib'</span>, <span class="st">'AZD7762'</span>, <span class="st">'Tanespimycin'</span>, <span class="st">'Nutlin-3a (-)'</span>, <span class="st">'Trametinib'</span>, <span class="st">'Dabrafenib'</span>,<span class="st">'SN-38'</span>, <span class="st">'Erlotinib'</span>]</span>
-<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>example_models <span class="op">=</span> <span class="bu">dict</span>()</span>
-<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> drug <span class="kw">in</span> example_drugs:</span>
-<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>  example_models[drug] <span class="op">=</span> model_drug(drug, verbose<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> model_drug(drug, verbose <span class="op">=</span> <span class="va">False</span>, figure <span class="op">=</span> <span class="va">False</span>):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    ic50_sub <span class="op">=</span> ic50_matched.loc[ic50_matched[<span class="st">'DRUG_NAME'</span>] <span class="op">==</span> drug][[<span class="st">'COSMIC_ID'</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'LN_IC50'</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'Z_SCORE'</span>]]</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.merge(ic50_sub, rma_expr_matched).set_index(<span class="st">'COSMIC_ID'</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> df.drop([<span class="st">'LN_IC50'</span>, <span class="st">'Z_SCORE'</span>], axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> df[<span class="st">'LN_IC50'</span>]</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size <span class="op">=</span> <span class="fl">0.2</span>)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    train_data <span class="op">=</span> lightgbm.Dataset(X_train, label <span class="op">=</span> y_train)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    test_data <span class="op">=</span> lightgbm.Dataset(X_test, label <span class="op">=</span> y_test, reference <span class="op">=</span> train_data)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    param <span class="op">=</span> {<span class="st">'boosting_type'</span>: <span class="st">'goss'</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>             <span class="st">'n_estimators'</span>: <span class="dv">500</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>             <span class="st">'num_iterations'</span>: <span class="dv">500</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>             <span class="st">'learning_rate'</span>: <span class="fl">0.05</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>             <span class="st">'max_bin'</span>: <span class="dv">1024</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>             <span class="st">'metric'</span>: <span class="st">'l2'</span>,</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>             <span class="st">'objective'</span>: <span class="st">'regression'</span>,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>             <span class="st">'num_leaves'</span>: <span class="dv">50</span>,</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>             <span class="st">'verbose'</span>: <span class="op">-</span><span class="dv">1</span>}</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    bst <span class="op">=</span> lightgbm.train(param,</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>                         train_data,</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>                         callbacks<span class="op">=</span>[lightgbm.early_stopping(stopping_rounds<span class="op">=</span><span class="dv">30</span>, verbose <span class="op">=</span> <span class="va">False</span>)],</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>                         valid_sets <span class="op">=</span> test_data)</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    fit_predict <span class="op">=</span> bst.predict(X_test)</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> verbose:</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        mae <span class="op">=</span> mean_absolute_error(fit_predict, y_test)</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>        test_range <span class="op">=</span> <span class="bu">max</span>(y_test)<span class="op">-</span><span class="bu">min</span>(y_test)</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>drug<span class="sc">}</span><span class="ss">:</span><span class="ch">\n</span><span class="ss">MAE = </span><span class="sc">{</span>mae<span class="sc">:.3}</span><span class="ss"> (range </span><span class="sc">{</span>test_range<span class="sc">:.3}</span><span class="ss">)'</span>)</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> figure:</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>        fig, ax <span class="op">=</span> plt.subplots(figsize <span class="op">=</span> (<span class="dv">16</span>,<span class="dv">8</span>), ncols <span class="op">=</span> <span class="dv">2</span>)</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].scatter(y_test, fit_predict, color <span class="op">=</span> <span class="st">'black'</span>, alpha <span class="op">=</span> <span class="fl">0.5</span>)</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].ylabel <span class="op">=</span> <span class="st">'Predicted ln(IC50)'</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].xlabel <span class="op">=</span> <span class="st">'True ln(IC50)'</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>        ax[<span class="dv">0</span>].set_title(drug)</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>        lightgbm.plot_importance(bst, max_num_features<span class="op">=</span><span class="dv">20</span>, ax <span class="op">=</span> ax[<span class="dv">1</span>])</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> figure <span class="op">==</span> <span class="st">'save'</span>:</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>            filename <span class="op">=</span> sub(<span class="st">'[^A-Za-z0-9-]+'</span>, <span class="st">''</span>, drug)</span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>            plt.savefig(<span class="ss">f'</span><span class="sc">{</span>filename<span class="sc">}</span><span class="ss">.png'</span>)</span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> bst, fit_predict, y_test</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="co">#all_models = dict()</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="co">#for drug in ic50_matched['DRUG_NAME'].unique():</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="co">#    all_models[drug] = model_drug(drug)</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>example_drugs <span class="op">=</span> [<span class="st">'AZ628'</span>, <span class="st">'WZ3105'</span>, <span class="st">'NPK76-II-72-1'</span>, <span class="st">'Tubastatin A'</span>, <span class="st">'PIK-93'</span>, <span class="st">'Venotoclax'</span>, <span class="st">'Methotrexate'</span>, <span class="st">'Refametinib'</span>, <span class="st">'AZD7762'</span>, <span class="st">'Tanespimycin'</span>, <span class="st">'Nutlin-3a (-)'</span>, <span class="st">'Trametinib'</span>, <span class="st">'Dabrafenib'</span>,<span class="st">'SN-38'</span>, <span class="st">'Erlotinib'</span>]</span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>example_models <span class="op">=</span> <span class="bu">dict</span>()</span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> drug <span class="kw">in</span> example_drugs:</span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>  example_models[drug] <span class="op">=</span> model_drug(drug, verbose<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>AZ628:
-MAE = 1.1 (range 8.76)
+MAE = 1.23 (range 8.49)
 WZ3105:
-MAE = 1.12 (range 7.21)
+MAE = 1.19 (range 8.98)
 NPK76-II-72-1:
-MAE = 1.18 (range 8.18)
+MAE = 1.07 (range 7.88)
 Tubastatin A:
-MAE = 0.908 (range 6.27)
+MAE = 0.858 (range 6.29)
 PIK-93:
-MAE = 1.19 (range 9.21)
+MAE = 1.13 (range 8.7)
 Venotoclax:
-MAE = 0.642 (range 9.31)
+MAE = 0.629 (range 9.47)
 Methotrexate:
-MAE = 0.978 (range 7.82)
+MAE = 1.0 (range 7.75)
 Refametinib:
-MAE = 0.762 (range 9.1)
+MAE = 0.811 (range 8.17)
 AZD7762:
-MAE = 0.843 (range 10.5)
+MAE = 0.785 (range 10.7)
 Tanespimycin:
-MAE = 1.14 (range 7.5)
+MAE = 0.961 (range 7.35)
 Nutlin-3a (-):
-MAE = 0.77 (range 5.25)
+MAE = 0.741 (range 5.03)
 Trametinib:
-MAE = 1.44 (range 10.4)
+MAE = 1.39 (range 10.4)
 Dabrafenib:
-MAE = 1.09 (range 10.1)
+MAE = 1.26 (range 10.3)
 SN-38:
-MAE = 1.05 (range 11.3)
+MAE = 1.01 (range 10.6)
 Erlotinib:
-MAE = 0.698 (range 4.99)</code></pre>
+MAE = 0.699 (range 3.74)</code></pre>
 </div>
 </div>
 <p>The R<sup>2</sup> value describes how much of the variance of a dependent variable can be explained by the independent variable. I’m using it here to get an idea of how well the predictions from the models correlate with the observations.</p>
-<div id="bb608b05" class="cell" data-execution_count="10">
+<div id="f7943328" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> r_squared(predicted, true):</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    mean <span class="op">=</span> np.mean(true)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    true_diff_sq <span class="op">=</span> np.square(true <span class="op">-</span> mean)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    pred_diff_sq <span class="op">=</span> np.square(true <span class="op">-</span> predicted)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span><span class="op">-</span>(np.<span class="bu">sum</span>(pred_diff_sq)<span class="op">/</span>np.<span class="bu">sum</span>(true_diff_sq))</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>models_r_sq <span class="op">=</span> <span class="bu">dict</span>([(x, r_squared(y[<span class="dv">1</span>], y[<span class="dv">2</span>])) <span class="cf">for</span> x, y <span class="kw">in</span> example_models.items()])</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>[(x,y) <span class="cf">for</span> x,y <span class="kw">in</span> models_r_sq.items() <span class="cf">if</span> y <span class="op">&gt;</span> <span class="fl">0.4</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> r_squared(predicted, true):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    mean <span class="op">=</span> np.mean(true)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    true_diff_sq <span class="op">=</span> np.square(true <span class="op">-</span> mean)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    pred_diff_sq <span class="op">=</span> np.square(true <span class="op">-</span> predicted)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span><span class="op">-</span>(np.<span class="bu">sum</span>(pred_diff_sq)<span class="op">/</span>np.<span class="bu">sum</span>(true_diff_sq))</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>models_r_sq <span class="op">=</span> <span class="bu">dict</span>([(x, r_squared(y[<span class="dv">1</span>], y[<span class="dv">2</span>])) <span class="cf">for</span> x, y <span class="kw">in</span> example_models.items()])</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>[(x,y) <span class="cf">for</span> x,y <span class="kw">in</span> models_r_sq.items() <span class="cf">if</span> y <span class="op">&gt;</span> <span class="fl">0.4</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="10">
-<pre><code>[('AZ628', 0.41411296036414635),
- ('NPK76-II-72-1', 0.4001567574256615),
- ('Venotoclax', 0.47345062407277827),
- ('Methotrexate', 0.48229975238999234),
- ('Refametinib', 0.6665587320403906),
- ('AZD7762', 0.43283595383694784),
- ('Nutlin-3a (-)', 0.4766576130307074),
- ('Trametinib', 0.4909707040779202),
- ('Dabrafenib', 0.46508102466450496)]</code></pre>
+<pre><code>[('NPK76-II-72-1', 0.40157140393725255),
+ ('Methotrexate', 0.4736918458664131),
+ ('Refametinib', 0.6541216816833308),
+ ('AZD7762', 0.45333389047134853),
+ ('Tanespimycin', 0.4472008811378849),
+ ('Nutlin-3a (-)', 0.4394229469688272),
+ ('Trametinib', 0.4575719604811399),
+ ('Dabrafenib', 0.460910835015082),
+ ('SN-38', 0.4510809900723055)]</code></pre>
 </div>
 </div>
 <p>Not bad for a first go. Here’s what a plot of the predicted vs observed values looks like for Refametinib, which can be predicted pretty well.</p>
-<div id="ba19050a" class="cell" data-execution_count="11">
+<div id="b05e70a2" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_test(drug):</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    bst, fit_predict, y_test <span class="op">=</span> example_models[drug]</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize <span class="op">=</span> (<span class="dv">16</span>,<span class="dv">8</span>), ncols <span class="op">=</span> <span class="dv">2</span>)</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].scatter(y_test, fit_predict, color <span class="op">=</span> <span class="st">'black'</span>, alpha <span class="op">=</span> <span class="fl">0.5</span>)</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].ylabel <span class="op">=</span> <span class="st">'Predicted ln(IC50)'</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].xlabel <span class="op">=</span> <span class="st">'True ln(IC50)'</span></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].set_title(drug)</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    lightgbm.plot_importance(bst, max_num_features<span class="op">=</span><span class="dv">20</span>, ax <span class="op">=</span> ax[<span class="dv">1</span>])</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>plot_test(<span class="st">'Refametinib'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_test(drug):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    bst, fit_predict, y_test <span class="op">=</span> example_models[drug]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize <span class="op">=</span> (<span class="dv">16</span>,<span class="dv">8</span>), ncols <span class="op">=</span> <span class="dv">2</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].scatter(y_test, fit_predict, color <span class="op">=</span> <span class="st">'black'</span>, alpha <span class="op">=</span> <span class="fl">0.5</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].ylabel <span class="op">=</span> <span class="st">'Predicted ln(IC50)'</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].xlabel <span class="op">=</span> <span class="st">'True ln(IC50)'</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].set_title(drug)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    lightgbm.plot_importance(bst, max_num_features<span class="op">=</span><span class="dv">20</span>, ax <span class="op">=</span> ax[<span class="dv">1</span>])</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>plot_test(<span class="st">'Refametinib'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -938,25 +935,25 @@ MAE = 0.698 (range 4.99)</code></pre>
 </div>
 </div>
 <p>And for Erlotinib, one that can’t (in this first go, at least).</p>
-<div id="8f6c797e" class="cell" data-execution_count="12">
+<div id="c671527f" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>plot_test(<span class="st">'Erlotinib'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>plot_test(<span class="st">'Erlotinib'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="gdsc_drug_models_files/figure-html/cell-13-output-1.png" width="1281" height="671" class="figure-img"></p>
+<p><img src="gdsc_drug_models_files/figure-html/cell-13-output-1.png" width="1322" height="671" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>The panels on the left of these plots show this comparison. Hopefully, you’ll be wondering what the other panel shows. A neat feature of LightGBM models is that the model can tell you how important different dependent variables are when making a prediction. This means that we can get an idea of how the differential expression of particular genes contributes to the sensitivity of tumour cells to drugs<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
 <p>To get a little preview of what I’ll do later in<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> this series, there’s a more powerful way of looking at how different variables affect prediction. This is using something called SHAP (SHapley Additive exPlanations) values. I’ll go more into these in another post, but here’s a plot of SHAP values for the model trying to predict AZ628 sensitivity.</p>
-<div id="b2e6abdd" class="cell" data-execution_count="13">
+<div id="e05fdf4b" class="cell" data-execution_count="13">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>shap.initjs()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>shap.initjs()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div align="center"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAWCAYAAAA1vze2AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdxJREFUeNq0Vt1Rg0AQJjcpgBJiBWIFkgoMFYhPPAIVECogPuYpdJBYgXQQrMCUkA50V7+d2ZwXuXPGm9khHLu3f9+3l1nkWNvtNqfHLgpfQ1EUS3tz5nAQ0+NIsiAZSc6eDlI8M3J00B/mDuUKDk6kfOebAgW3pkdD0pFcODGW4gKKvOrAUm04MA4QDt1OEIXU9hDigfS5rC1eS5T90gltck1Xrizo257kgySZcNRzgCSxCvgiE9nckPJo2b/B2AcEkk2OwL8bD8gmOKR1GPbaCUqxEgTq0tLvgb6zfo7+DgYGkkWL2tqLDV4RSITfbHPPfJKIrWz4nJQTMPAWA7IbD6imcNaDeDfgk+4No+wZr40BL3g9eQJJCFqRQ54KiSt72lsLpE3o3MCBSxDuq4yOckU2hKXRuwBH3OyMR4g1UpyTYw6mlmBqNdUXRM1NfyF5EPI6JkcpIDBIX8jX6DR/6ckAZJ0wEAdLR8DEk6OfC1Pp8BKo6TQIwPJbvJ6toK5lmuvJoRtfK6Ym1iRYIarRo2UyYHvRN5qpakR3yoizWrouoyuXXQqI185LCw07op5ZyCRGL99h24InP0e9xdQukEKVmhzrqZuRIfwISB//cP3Wk3f8f/yR+BRgAHu00HjLcEQBAAAAAElFTkSuQmCC"></div><script charset="utf-8">!function(t){function e(r){if(n[r])return n[r].exports;var i=n[r]={i:r,l:!1,exports:{}};return t[r].call(i.exports,i,i.exports,e),i.l=!0,i.exports}var n={};return e.m=t,e.c=n,e.i=function(t){return t},e.d=function(t,n,r){e.o(t,n)||Object.defineProperty(t,n,{configurable:!1,enumerable:!0,get:r})},e.n=function(t){var n=t&&t.__esModule?function(){return t.default}:function(){return t};return e.d(n,"a",n),n},e.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},e.p="",e(e.s=410)}([function(t,e,n){"use strict";function r(t,e,n,r,o,a,u,c){if(i(e),!t){var s;if(void 0===e)s=new Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[n,r,o,a,u,c],f=0;s=new Error(e.replace(/%s/g,function(){return l[f++]})),s.name="Invariant Violation"}throw s.framesToPop=1,s}}var i=function(t){};t.exports=r},function(t,e,n){"use strict";var r=n(8),i=r;t.exports=i},function(t,e,n){"use strict";function r(t){for(var e=arguments.length-1,n="Minified React error #"+t+"; visit http://facebook.github.io/react/docs/error-decoder.html?invariant="+t,r=0;r<e;r++)n+="&args[]="+encodeURIComponent(arguments[r+1]);n+=" for the full message or use the non-minified dev environment for full errors and additional helpful warnings.";var i=new Error(n);throw i.name="Invariant Violation",i.framesToPop=1,i}t.exports=r},function(t,e,n){"use strict";function r(t){if(null===t||void 0===t)throw new TypeError("Object.assign cannot be called with null or undefined");return Object(t)}function i(){try{if(!Object.assign)return!1;var t=new String("abc");if(t[5]="de","5"===Object.getOwnPropertyNames(t)[0])return!1;for(var e={},n=0;n<10;n++)e["_"+String.fromCharCode(n)]=n;var r=Object.getOwnPropertyNames(e).map(function(t){return e[t]});if("0123456789"!==r.join(""))return!1;var i={};return"abcdefghijklmnopqrst".split("").forEach(function(t){i[t]=t}),"abcdefghijklmnopqrst"===Object.keys(Object.assign({},i)).join("")}catch(t){return!1}}/*
@@ -994,25 +991,25 @@ n===t._wrapperState.initialValue&&(e.value=n)}});t.exports=l},function(t,e,n){"u
 </div>
 </div>
 <p>The colour of a point describes how high the feature (dependent variable) value is, and the x-position is the SHAP value. For example, a high DUSP6 expression value is associated with a more negative SHAP value, meaning a lower IC<sub>50</sub>, so the cell line is more sensitive to AZ628. There’s a lot more that can be done with these, but I think this is quite long enough for one post.</p>
-<div id="6f82edea" class="cell" data-execution_count="14">
+<div id="ee1032de" class="cell" data-execution_count="14">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prep_data(drug):</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    ic50_sub <span class="op">=</span> ic50_matched.loc[ic50_matched[<span class="st">'DRUG_NAME'</span>] <span class="op">==</span> drug][[<span class="st">'COSMIC_ID'</span>,</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'LN_IC50'</span>,</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'Z_SCORE'</span>]]</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.merge(ic50_sub, rma_expr_matched).set_index(<span class="st">'COSMIC_ID'</span>)</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df.drop([<span class="st">'LN_IC50'</span>, <span class="st">'Z_SCORE'</span>], axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_shap(drug):</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> example_models[drug][<span class="dv">0</span>]</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> prep_data(drug)</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    explainer <span class="op">=</span> shap.TreeExplainer(model)</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    shap_values <span class="op">=</span> explainer.shap_values(X)</span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    shap.summary_plot(shap_values, X, title <span class="op">=</span> drug)</span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>plot_shap(<span class="st">'AZ628'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prep_data(drug):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    ic50_sub <span class="op">=</span> ic50_matched.loc[ic50_matched[<span class="st">'DRUG_NAME'</span>] <span class="op">==</span> drug][[<span class="st">'COSMIC_ID'</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'LN_IC50'</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="st">'Z_SCORE'</span>]]</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.merge(ic50_sub, rma_expr_matched).set_index(<span class="st">'COSMIC_ID'</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df.drop([<span class="st">'LN_IC50'</span>, <span class="st">'Z_SCORE'</span>], axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_shap(drug):</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> example_models[drug][<span class="dv">0</span>]</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> prep_data(drug)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    explainer <span class="op">=</span> shap.TreeExplainer(model)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    shap_values <span class="op">=</span> explainer.shap_values(X)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    shap.summary_plot(shap_values, X, title <span class="op">=</span> drug)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>plot_shap(<span class="st">'AZ628'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
