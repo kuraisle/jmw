@@ -1,0 +1,60 @@
+---
+title: "Improving drug resistance models"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+description: The models for drug sensitivity could be improved. Here I try a few ways
+date-format: iso
+date: 2024-04-03
+draft: true
+categories:
+  - data analysis
+  - gdsc
+execute:
+  freeze: true
+---
+
+```{python}
+#| warning: false
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import lightgbm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
+from sklearn.linear_model import LinearRegression
+from re import sub
+from IPython.display import Markdown
+```
+
+
+```{python}
+# Reading the excel was taking ages. The csv import, with extraneous columns removed, is much faster
+ic50_data = pd.read_csv("data/GDSC1.csv")
+ic50_data.head()
+```
+
+```{python}
+test_counts = ic50_data[['DRUG_NAME', 'COSMIC_ID']] .groupby('DRUG_NAME').agg('count') 
+
+fig, ax = plt.subplots(figsize = (8,6))
+ax.hist(test_counts, bins = 50)
+ax.set_xlabel('Number of cells tested')
+ax.set_ylabel('Number of drugs')
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| warning: false
+Markdown(f"Of the {len(test_counts)} drugs in the dataset, {int((test_counts >800).sum())} have over 800 tests.")
+```
+
+```{python}
+rma_expr = pd.read_csv("data/Cell_line_RMA_proc_basalExp.txt", sep = "\t")
+rma_expr.dropna(inplace=True)
+rma_expr= rma_expr.set_index('GENE_SYMBOLS')
+rma_expr.head()
+```
+
