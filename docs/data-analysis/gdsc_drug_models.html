@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.552">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -231,7 +231,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </details>
 <div class="cell-output cell-output-display" data-execution_count="2">
 <div>
-<div>
 
 
 <table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
@@ -298,7 +297,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-</div>
 <p>I’m just using the first version of the dataset here, as shown by “GDSC1” in the <code>DATASET</code> column. There is a GDSC2 that could be added, but we have enough to be getting on with. The <code>COSMIC_ID</code> and <code>CELL_LINE_NAME</code> columns identify the cell line used in the experiment. <code>DRUG_NAME</code> should be fairly obvious.</p>
 <p>The last two columns might be a bit less familiar. To explain these, I will have to be a little more precise about what “sensitivity” means. To create this dataset, the experimenters grew lots of samples of each cell line, and added different concentrations of drugs to the samples. They then let them grow for a bit, and counted how many were still viable (alive and able to keep going). They then analysed this data to see how much each concentration of the drug slowed the growth of cells. They then fitted this to a dose response curve to get an estimate of the concentration of the drug that inhibited growth by 50, a measure called the IC<sub>50</sub>. This measure is best described using a natural logarithm, so this is reported as <code>LN_IC50</code>. If you want to get a better feel for dose-response curves, I have a toy <a href="../data-analysis/making_a_dose-response_curve.html">here</a>. The <code>Z_SCORE</code> describes how significant this difference is for that cell line, compared with the sensitivity of other cell lines to that drug.</p>
 <p>Another part of the dataset is a measure of how genes are expressed in each cell line. For each of the cell lines in the dataset, the mRNA for each gene has been measured using a microarray.</p>
@@ -313,7 +311,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>rma_expr.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="3">
-<div>
 <div>
 
 
@@ -496,7 +493,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-</div>
 <p>In this table, each row is a gene, and each column shows the expression of that gene in a cell line. This data can be used with the drug sensitivity dataset using the <code>COSMIC_ID</code> column of that dataset. The column names in the expression table contain the COSMIC ID (<code>DATA.[COSMIC ID]</code>).</p>
 <p>We can see how many of the cell lines described in the expression table are present in the sensitivity table.</p>
 <div id="e4c2e5f2" class="cell" data-execution_count="4">
@@ -536,7 +532,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ic50_matched.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="6">
-<div>
 <div>
 
 
@@ -604,7 +599,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-</div>
 <p>How many drugs does that leave us with?</p>
 <div id="5510c0d6" class="cell" data-execution_count="7">
 <details class="code-fold">
@@ -626,7 +620,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>rma_expr_matched.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="8">
-<div>
 <div>
 
 
@@ -782,7 +775,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 
 <p>5 rows × 17420 columns</p>
-</div>
 </div>
 </div>
 </div>
@@ -1112,24 +1104,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-    var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
-    var isInternal = (href) => {
-        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
-    }
-    // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
-    for (var i=0; i<links.length; i++) {
-      const link = links[i];
-      if (!isInternal(link.href)) {
-        // undo the damage that might have been done by quarto-nav.js in the case of
-        // links that we want to consider external
-        if (link.dataset.originalHref !== undefined) {
-          link.href = link.dataset.originalHref;
-        }
-      }
-    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -1164,11 +1138,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      if (note) {
-        return note.innerHTML;
-      } else {
-        return "";
-      }
+      return note.innerHTML;
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');

@@ -20,20 +20,30 @@ execute:
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import hdbscan
+import seaborn as sns
 import lightgbm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import TSNE
+from matplotlib import cm
 from re import sub
 from IPython.display import Markdown
 ```
 
+In a [previous article](gdsc_drug_models.qmd), I trained some models to predict the sensitivity of tumour cells to drugs. This naive attempt yielded some promising results, but there's a lot you can do to improve machine learning models. Let's try a few.
+
+Here's the data again:
 
 ```{python}
 # Reading the excel was taking ages. The csv import, with extraneous columns removed, is much faster
 ic50_data = pd.read_csv("data/GDSC1.csv")
 ic50_data.head()
 ```
+
+The first thing to check is whether you have the data you need.
 
 ```{python}
 test_counts = ic50_data[['DRUG_NAME', 'COSMIC_ID']] .groupby('DRUG_NAME').agg('count') 
@@ -48,8 +58,10 @@ plt.show()
 
 ```{python}
 #| warning: false
-Markdown(f"Of the {len(test_counts)} drugs in the dataset, {int((test_counts >800).sum())} have over 800 tests.")
+Markdown(f"Here we can see that of the {len(test_counts)} drugs in the dataset, {int((test_counts >800).sum())} have over 800 tests. This means we can drop a few drugs and be sure we have plenty of data points to predict from.")
 ```
+
+We'll bring in the expression data again. We've not looked at this data at all, really. Let's have a reminder of the shape of it.
 
 ```{python}
 rma_expr = pd.read_csv("data/Cell_line_RMA_proc_basalExp.txt", sep = "\t")
@@ -57,4 +69,69 @@ rma_expr.dropna(inplace=True)
 rma_expr= rma_expr.set_index('GENE_SYMBOLS')
 rma_expr.head()
 ```
+
+```{python}
+Markdown(f"I've not checked whether all of the cells have every gene present in the dataset. Luckily, you can see that there are {rma_expr.drop(columns = 'GENE_title').isna().sum().sum()} missing values in the table.")
+```
+
+What can we tell about the shape of this data? It would be interesting to know a bit more about how the differences in expression correlate. The first thing to do will be to normalise the data. I'll mean centre the expression and scale the standard deviation to one for comparison's sake^[note: I don't do this for the models as they don't really care about scaling].
+
+```{python}
+scaler = StandardScaler()
+rma_norm_and_scale = rma_expr.drop(columns='GENE_title')
+rma_norm_and_scale = rma_norm_and_scale.apply(lambda x: (x-x.mean())/x.std(), axis = 1)
+rma_norm_and_scale.head()
+```
+
+Now we have the data standardized like this, let's see if there are any common patterns in the expression data. I'll use a neat clustering algorithm called [HDBSCAN](https://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html).
+
+```{python}
+clusterer = hdbscan.HDBSCAN(metric = 'manhattan')
+clusterer.fit(rma_norm_and_scale)
+```
+
+```{python}
+Markdown(f"There are {clusterer.labels_.max()+1} estimated clusters. Let's visualise them. In reality, this is >1000 dimensional data, so we will use [t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding) to visualise it in two.")
+```
+
+```{python}
+#| warning: false
+tsne = TSNE(n_components = 2)
+
+gene_embed = tsne.fit_transform(rma_norm_and_scale)
+
+def plot_clusters(labels, projection):
+    clust_label_df = pd.DataFrame({
+                                    'label': labels,
+                                    'x': projection[:,0],
+                                    'y':projection[:,1]
+                                })
+    
+    fig, axs = plt.subplots(figsize = (12,8), ncols = 2, gridspec_kw = {'width_ratios': (4,2)}, dpi = 600)
+
+    palette = ['grey', *cm.get_cmap('viridis', labels.max()+1).colors]
+
+    for i in range(-1, labels.max()+1):
+        label_frame = clust_label_df.loc[clust_label_df['label'] == i]
+        axs[0].scatter(label_frame.x, label_frame.y, color = palette[i+1], alpha = 0.3)
+    
+    bar_y = np.arange(labels.max()+2)
+    cluster_sizes = [len([x for x in labels if x == i]) for i in range(-1, labels.max()+1)]
+    axs[1].set_xscale('log')
+    axs[1].set_xlim((1, max(cluster_sizes)))
+    axs[1].set_yticks([],[])
+    
+    for i in bar_y:
+        axs[1].text(3, bar_y[i], cluster_sizes[i], weight = 'bold')
+    
+    axs[1].barh(bar_y, cluster_sizes, color = palette)
+    axs[1].set_xlabel('Genes in cluster')
+    plt.tight_layout()
+
+plot_clusters(clusterer.labels_, gene_embed)
+plt.show()
+```
+
+The problem with t-SNE
+
 

@@ -1,0 +1,164 @@
+---
+title: "Birthday animation"
+format: html
+description: It was my 32nd birthday, so I made myself a little gift. At the bottom, there's a gift for you too!
+date-format: iso
+date: 2024-04-25
+---
+I turned 32 this week. I had a fun idea of how I could mark the occasion, given that 32 is an important number. I've been making plots using [observable](https://observablehq.com/) and [D3](https://d3js.org/), and under the hood, these use the `<svg>` element, so I thought it would be a good excuse to have a look at how these work.
+
+My idea is just a bunch of moving dots [again](confocal_volume.qmd). You draw a circle in an svg by adding a `<circle />` and providing the position with `cx` and `cy`, a `r`adius, and a `fill` colour.
+
+<svg width="500" height="100">
+  <circle cx="25" cy="50" r="5" fill="black"/>
+</svg>
+
+```
+<svg width="500" height="100">
+  <circle cx="25" cy="50" r="5" fill="black"/>
+</svg>
+```
+
+You can use D3 to do the same thing. The advantage here is that you get a nice way to change the attributes of your svg.
+```{ojs}
+viewof dotRadius = Inputs.range([1,25], {value: 5, step:1, label: 'Dot radius'})
+```
+
+```{ojs}
+{
+const simpleDotSvg = d3.create('svg')
+    .attr('width', 500)
+    .attr('height', 100);
+
+simpleDotSvg.append('circle')
+    .attr('cx', 25)
+    .attr('cy', 50)
+    .attr('r', dotRadius)
+    .attr('fill', 'black');
+return simpleDotSvg.node();
+}
+```
+
+I did say there were moving dots, so here's a way to make them move. You can add an `animateMotion` element to your circle to get it to move. Here, I tell it to repeat indefinitely, take 2 seconds to run, and to move from (50, 25) to (150, 25), then return to the beginning with `Z`.
+
+```{ojs}
+{
+  const movingDotSvg = d3.create('svg')
+      .attr('width', 500)
+      .attr('height', 100)
+  movingDotSvg.append('circle')
+    .attr('cx', 25)
+    .attr('cy', 50)
+    .attr('r', dotRadius)
+    .attr('fill', 'black')
+    .append('animateMotion')
+      .attr('repeatCount', 'indefinite')
+      .attr('dur', '2s')
+      .attr('path', 'M 50 25 L 150 25 Z');
+  return movingDotSvg.node();
+}
+```
+
+The idea is to have multiple dots moving around regular polygons. We'll need a way to know what path they need to take. I remember being shown how to construct a hexagon with a compass as a child, and this is more or less the same!
+
+```{ojs}
+function getPolygonPoints(originX, originY, radius, edges) {
+    const angleStep = (2 * Math.PI) / edges;
+    const points = [];
+    for (let i = 0; i < edges; i++) {
+      const angle = i * angleStep;
+      const x = originX + radius * Math.cos(angle);
+      const y = originY + radius * Math.sin(angle);
+      points.push({ x, y });
+    }
+    return points;
+  }
+```
+
+This function takes an origin, a radius, and the number of edges you want and returns an array of points where the corners are.
+
+The next bit of code is a little more complicated.
+
+```{ojs}
+function animatePoly(parent, originX, originY, radius, edges, duration, colour) {
+  const points = getPolygonPoints(originX, originY, radius, edges);
+    
+  let pathString = `M ${points[0].x} ${points[0].y} `; // Start at the first point
+  for (let i = 1; i < points.length; i++){
+    pathString += `L ${points[i].x} ${points[i].y} `; // Add line segments
+  }
+  pathString += 'Z'
+        
+  parent.append('circle')
+    .attr('cx', originX)
+    .attr('cy', originY)
+    .attr('r', 5)
+    .attr('fill', colour)
+    .append('animateMotion')
+      .attr('dur', `${duration}s`)
+      .attr('repeatCount', 'indefinite')
+      .attr('path', pathString);
+  }
+```
+
+The first thing it does is to use our previous function to calculate the points of your desired polygon. Then, it uses them to create a path string like we used to make the moving dot above. It then appends a new shape to the `parent` element specified, taking `duration` and `colour` arguments.
+
+Let's use it to make a dot moving around a square.
+
+```{ojs}
+{
+  const squareSvg = d3.create('svg')
+    .attr('width', 200)
+    .attr('height', 200);
+
+  animatePoly(squareSvg, 50, 50, 80, 4, 4, 'black');
+
+  return squareSvg.node();
+}
+```
+
+Now, what does this have to do with being 32? Well, 32, is 2<sup>5</sup>, so if we have polygons for the powers of two...
+
+```{ojs}
+{
+  const birthdaySvg = d3.create('svg')
+    .attr('width', 400)
+    .attr('height', 400);
+  
+  animatePoly(birthdaySvg, 50, 50, 80, 2, 2, 'black');
+  animatePoly(birthdaySvg, 50, 50, 80, 4, 4, 'darkslategray');
+  animatePoly(birthdaySvg, 50, 50, 80, 8, 8, 'dimgray');
+  animatePoly(birthdaySvg, 50, 50, 80, 16, 16, 'slategray');
+  animatePoly(birthdaySvg, 50, 50, 80, 32, 32, 'gray');
+
+  return birthdaySvg.node();
+}
+```
+
+I don't know about you, but I find that very satisfying.
+
+Having powers of two for this is a lot of fun, but not everyone is 32. As long as your birthday isn't a prime number, you can get some satisfaction too!
+
+```{ojs}
+//| code-fold: true
+viewof userAge = Inputs.range([2, 100], {value: 24, step: 1, label: 'Select your age'})
+```
+
+```{ojs}
+//| code-fold: true
+{
+  const factors = number => [...Array(number + 1).keys()].filter(i=>number % i === 0).slice(1);
+  
+  const ageFactors = factors(userAge);
+
+  const svg = d3.create('svg')
+    .attr('width', 600)
+    .attr('height', 600);
+  
+  ageFactors.forEach((factor) => animatePoly(svg, 50, 90, 80, factor, factor, 'black'))
+
+  return svg.node();
+}
+```
+
+This is kind of silly and pointless, but I can justify it to myself as good practice for whenever I want to go lower-level building my own visualisations.

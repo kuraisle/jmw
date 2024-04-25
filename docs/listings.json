@@ -1,21 +1,8 @@
 [
   {
-    "listing": "/papers/index.html",
-    "items": [
-      "/papers/abcg2_tr-fret.html",
-      "/papers/SMALP_methods.html",
-      "/papers/functional divergence.html",
-      "/papers/ABCG review.html",
-      "/papers/rhodopsin_encyclopedia.html",
-      "/papers/pSRII_nmr.html",
-      "/papers/retinitis_pigmentosa_mutants.html",
-      "/papers/chlorin_e6.html",
-      "/papers/pSRII_abs.html"
-    ]
-  },
-  {
     "listing": "/data-analysis/index.html",
     "items": [
+      "/data-analysis/happy_32_birthday.html",
       "/data-analysis/gdsc_drug_models.html",
       "/data-analysis/prison_map_move_from_plotly.html",
       "/data-analysis/spreadsheet_prison_database.html",
@@ -25,6 +12,20 @@
       "/data-analysis/first_order_kinetics.html",
       "/data-analysis/mp_expense_carbon.html",
       "/data-analysis/making_a_dose-response_curve.html"
+    ]
+  },
+  {
+    "listing": "/papers/index.html",
+    "items": [
+      "/papers/abcg2_tr-fret.html",
+      "/papers/SMALP_methods.html",
+      "/papers/functional divergence.html",
+      "/papers/rhodopsin_encyclopedia.html",
+      "/papers/ABCG review.html",
+      "/papers/pSRII_nmr.html",
+      "/papers/retinitis_pigmentosa_mutants.html",
+      "/papers/chlorin_e6.html",
+      "/papers/pSRII_abs.html"
     ]
   }
 ]
