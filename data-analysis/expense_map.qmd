@@ -1,0 +1,181 @@
+---
+title: Map of MPs' expenses
+format:
+    html:
+        code-fold: true
+description: Plotting the expenses MPs have claimed on their constituencies
+date-format: iso
+date: 2024-04-26
+categories:
+    - data analysis
+---
+
+In my project trying to visualize the UK's prisons, I hit a snag where [plotly wouldn't plot my whole dataset](prison_map_move_from_plotly.qmd), so I need to make my own solution. I've also been looking into the [carbon footprint of MPs' expenses](mp_expense_carbon.qmd), so I have a readily available dataset to plot on a map of the UK to get a feel for how this could be done.
+
+First, I need a map of the UK. There are maps [available from the ONS](https://geoportal.statistics.gov.uk/), but these use the [WGS84 standard](https://en.wikipedia.org/wiki/World_Geodetic_System) for their co-ordinates, which doesn't play nicely with D3, which I'm using here. Luckily, Martin Chorley has made topojson maps of each of the UK nations available [here](http://martinjc.github.io/UK-GeoJSON/).
+
+D3 likes geojson for its plots. You can get the features equivalent to geojson out of a topojson using `topojson.feature()`.
+
+```{ojs}
+englandTopo = FileAttachment("data/england_topo_wpc.json").json();
+englandGeo = topojson.feature(englandTopo, englandTopo.objects.wpc);
+walesTopo = FileAttachment("data/wales_topo_wpc.json").json();
+walesGeo = topojson.feature(walesTopo, walesTopo.objects.wpc);
+scotlandTopo = FileAttachment("data/scotland_topo_wpc.json").json();
+scotlandGeo = topojson.feature(scotlandTopo, scotlandTopo.objects.wpc);
+niTopo = FileAttachment("data/ni_topo_wpc.json").json();
+niGeo = topojson.feature(niTopo, niTopo.objects.wpc);
+```
+
+The structure of a geojson object is a key `type`, which should be `"FeatureCollection"`, and then an array of the features. For convenience, I've combined the features from the individual nations into one object.
+
+```{ojs}
+ukGeo = ({
+  type: "FeatureCollection",
+  features: [...englandGeo.features, ...walesGeo.features, ...scotlandGeo.features, ...niGeo.features],
+});
+```
+
+I'm using the 2022-2023 expenses dataset I've used before.
+
+```{ojs}
+data = await FileAttachment("data/individualBusinessCosts_22_23.csv").csv({typed:true});
+```
+
+
+Then for each constituency, we can add up the amount paid for each category. The dataset is not perfectly clean; the constituency names are a bit inconsistent. I've manually corrected a few^[Leeds NW -> Leeds North West, for example], but a lot of the constituencies have " CC" or " BC" at the end. This isn't on the map, so I've removed the suffix.
+
+```{ojs}
+spend_by_constituency = data.reduce((acc, row) => {
+      // Remove suffixes, if present
+      const constituency = row.Constituency.includes(' BC') || row.Constituency.includes(' CC') ? row.Constituency.slice(0,-3) : row.Constituency
+      const existing_constituency = acc.find(item => item.Constituency === constituency);
+      if (existing_constituency) {
+        const existing_category = existing_constituency.categories.hasOwnProperty(row.Category);
+        if (existing_category) {
+          existing_constituency.categories[row.Category] += row['Amount Paid']
+        } else {
+          existing_constituency.categories[row.Category] = row['Amount Paid']
+        }
+      } else {
+        const category_obj = {};
+        category_obj[row.Category] = row['Amount Paid']
+        acc.push({Constituency: constituency, categories: category_obj})
+      }
+      return acc
+    }, [])
+```
+
+I've then used this added-up data and for each constituency we have the spend in all categories.
+
+```{ojs}
+mp_spend = spend_by_constituency.map((cons) => ({Constituency: cons.Constituency,
+                                                 Amount: Object.entries(cons.categories).reduce((acc, [category, amount]) => {
+                                                    if (expense_categories.includes(category)){acc += amount};
+                                                    return acc
+                                                 }, 0)}));
+```
+
+Then I define a couple of functions for getting this data into the visualisation. The first, `get_amount`, retrieves the expenses for a constituency if you supply the name. If there isn't a matching value in the data, it returns undefined. This is the way the visualisation expects to fetch data^[I had originally used d3's built-in `group` function which returns an object with nice behaviour for this, but the way I did it meant the expenses were summed up again every time you changed the visualisation. I'm sure there's an elegant d3 solution, but mine works fine.]. The second function, `to_pounds` formats a number as pounds. This is a nice d3 function, and you can first define your locale so you use the right currency format.
+
+```{ojs}
+get_amount = (d) => {
+      const constituency = mp_spend.find(item => item.Constituency === d.properties.PCON13NM);
+      return constituency ? constituency.Amount : undefined;
+    }
+uk_locale = d3.formatLocale({"currency": ["£", ""]})
+to_pounds = uk_locale.format("$,.2f")
+```
+
+The map shows **a lot** of constituencies, some of them really tiny. There are two things I'll add to make it a bit easier to read.
+
+First, I'm going to get out the top 20 spenders and plot a bar chart underneath.
+
+```{ojs}
+biggest_spenders = {
+    mp_spend.sort((a, b) => b.Amount - a.Amount);
+    const biggest_spenders = mp_spend.slice(0,20);
+    return biggest_spenders;
+}
+```
+
+Then I'll add toooltips, so you can see the amount paid when you hover over.
+
+```{ojs}
+import {addTooltips} from "@mkfreeman/plot-tooltip";
+```
+
+We can get a list of all the different categories of expenses out of the dataset.
+
+```{ojs}
+viewof expense_categories = Inputs.checkbox(data.reduce((categories, row) => {
+          if (!(categories.includes(row.Category))) {
+            return [...categories, row.Category]
+            };
+        return categories
+      }, []), {label: 'Expense Categories'})
+```
+
+Here's the map! Click the checkboxes to add information
+
+```{ojs}
+addTooltips(Plot.plot({
+  projection: {
+    type: 'mercator',
+    domain: ukGeo
+  },
+  marks: [
+      Plot.geo(ukGeo, { stroke: "black",
+                        fill: (d) => get_amount(d),
+                        title: (d) => `${d.properties.PCON13NM} \n ${to_pounds(get_amount(d))}`
+                      })
+        ],
+  color: {
+    scheme: "turbo",
+    type: 'linear',
+    unknown: '#ddd',
+    legend: true,
+    label: "Expenses Paid to MPs in constituency",
+  }
+}))
+```
+
+And a matching bar chart, showing the top 20 spenders.
+
+```{ojs}
+Plot.plot({
+  marks: [
+      Plot.barX(biggest_spenders, {
+        x: "Amount",
+        y: "Constituency",
+        fill: "Amount",
+        sort: {color: "fill", y:"-x" },
+        marginLeft: 200
+      }
+    )
+    ],
+  color: {scheme: "turbo"}
+})
+```
+
+If you want to know the details behind the spending, you can look through the data.
+
+```{ojs}
+viewof query_constituency = Inputs.select(
+        data.reduce((acc, row) => {
+            if (!(acc.includes(row.Constituency))) {
+              return [...acc, row.Constituency]
+            };
+            return acc;
+          },
+          []
+        ),
+        {label: "Constituency name"}
+      )
+```
+
+```{ojs}
+Inputs.table(data.filter((d) => d.Constituency === query_constituency))
+```
+
+So this isn't a perfect set of visualisations. The constituency names for Northern Ireland aren't on the map, so these only show grey, for example. It's a good bit of practice for me though, and you can find some interesting patterns. For example, if you select the travel categories, there's a general trend for increased spend the further the MP is from Westminster, which is to be expected. But why is the MP for Morecambe and Lunesdale (in north west England), spending twice as much as the MP for Moray (north east Scotland)? Why is the MP for Lincoln spending so much on staffing^[And why is so much "Consultancy"]?
