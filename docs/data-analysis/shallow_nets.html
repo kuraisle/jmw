@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-06-04">
+<meta name="description" content="Visualising how shallow neural nets can approximate any function">
+
+<title>James Mitchell-White - Visualising shallow neural nets</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">James Mitchell-White</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../data-analysis/index.html"> 
+<span class="menu-text">Data Analysis</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#neuron-activation" id="toc-neuron-activation" class="nav-link active" data-scroll-target="#neuron-activation">Neuron Activation</a>
+  <ul class="collapse">
+  <li><a href="#relu" id="toc-relu" class="nav-link" data-scroll-target="#relu">ReLU</a></li>
+  <li><a href="#activation-function" id="toc-activation-function" class="nav-link" data-scroll-target="#activation-function">Activation function</a></li>
+  </ul></li>
+  <li><a href="#universal-approximation" id="toc-universal-approximation" class="nav-link" data-scroll-target="#universal-approximation">Universal approximation</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Visualising shallow neural nets</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">neural nets</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Visualising how shallow neural nets can approximate any function
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2024-06-04</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>I was on a bit of a roll writing these little articles frequently, but it has been a while since the last one. I’m writing this one at least partly with a very small baby resting on me, so maybe it’s something to do with that.</p>
+<p>In any case, I’ve recently got a job which is more data focussed, so either I’ll write a lot more of these as I learn lots of new things, or I’ll have no time to write any more. The job will involve quite a bit of deep learning. I think most of the actual interacting with neural nets will be at a high level, but I’m working through Simon Prince’s (so far) excellent <a href="https://udlbook.github.io/udlbook/">Understanding Deep Learning</a> to get a better grasp of how they work under the hood. It has excellent text and figures to help build understanding. Even better, it has notebooks to work through. The notebooks are great for getting you to write some code, but I thought I could add some interactivity to the examples. Some of the explanations here will be quite brief; I’m not trying to duplicate the information in the book.</p>
+<section id="neuron-activation" class="level2">
+<h2 class="anchored" data-anchor-id="neuron-activation">Neuron Activation</h2>
+<section id="relu" class="level3">
+<h3 class="anchored" data-anchor-id="relu">ReLU</h3>
+<p>Here we start with the very basics. The Rectified Linear Unit (ReLU) function is a common activation function used in deep learning. It’s simple to understand: if a value is negative, return zero. Otherwise, return the value.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1" data-startfrom="23" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 22;"><span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">relu</span>(preactivation) {</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> preactivation <span class="op">&lt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> <span class="op">:</span> preactivation</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</section>
+<section id="activation-function" class="level3">
+<h3 class="anchored" data-anchor-id="activation-function">Activation function</h3>
+<p>An artificial neural net applies an activation function like ReLU to the output of a linear function.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2" data-startfrom="33" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 32;"><span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">linearfunc</span>(x<span class="op">,</span> slope<span class="op">,</span> intercept) {</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> intercept <span class="op">+</span> slope <span class="op">*</span> x</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3" data-startfrom="39" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 38;"><span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">activation</span>(x<span class="op">,</span> pre<span class="op">,</span> act) {</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> pre_val <span class="op">=</span> <span class="fu">pre</span>(x)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {<span class="dt">x</span><span class="op">:</span> x<span class="op">,</span> <span class="dt">pre</span><span class="op">:</span> pre_val<span class="op">,</span> <span class="dt">act</span><span class="op">:</span> <span class="fu">act</span>(pre_val)}</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<p>Here, we apply ReLU to a neuron. Play around with the sliders to get a feel for how changing the slope and y-intercept of the linear function changes the output of the neuron after applying the activation function.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4" data-startfrom="48" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 47;"><span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>test_vis <span class="op">=</span> {</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> test_x <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> <span class="dv">80</span>}<span class="op">,</span> (x<span class="op">,</span>i) <span class="kw">=&gt;</span> i<span class="op">/</span><span class="dv">4</span>)<span class="op">;</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> test_x<span class="op">.</span><span class="fu">map</span>((x) <span class="kw">=&gt;</span> <span class="fu">activation</span>(x<span class="op">,</span> (d) <span class="kw">=&gt;</span> <span class="fu">linearfunc</span>(d<span class="op">,</span> test_slope<span class="op">,</span> test_offset)<span class="op">,</span> relu))</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="grid">
+<div class="g-col-4">
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5" data-startfrom="60" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 59;"><span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>viewof test_slope <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">2</span><span class="op">,</span> <span class="dv">2</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Slope"</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="g-col-4">
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6" data-startfrom="68" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 67;"><span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>viewof test_offset <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">5</span><span class="op">,</span> <span class="dv">5</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"y-intercept"</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7" data-startfrom="76" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 75;"><span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span>}<span class="op">,</span></span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(test_vis<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"pre"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"preactivation"</span>})<span class="op">,</span></span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(test_vis<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"act"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"activation"</span>})</span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span>}<span class="op">,</span></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="dt">y</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="op">-</span><span class="dv">10</span><span class="op">,</span> <span class="dv">10</span>]}</span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-7" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="universal-approximation" class="level2">
+<h2 class="anchored" data-anchor-id="universal-approximation">Universal approximation</h2>
+<p>So how does a neural network use these activation functions? The answer is that they can be combined to approximate any function. For an example, let’s see how three neurons can approximate a section of a sine function.</p>
+<p>The way you can combine the neurons is to add up their outputs, each multiplied by a constant. In the three-neuron example:</p>
+<p><span class="math inline">\(y = \phi_0 + \phi_1 h_1 + \phi_2 h_2 + \phi_3 h_3\)</span></p>
+<p>where <span class="math inline">\(h_d\)</span> is the <span class="math inline">\(d^{th}\)</span> neuron. Since the ReLU neurons can be 0 in some region and &gt;0 for the rest, you can use them to build up an approximation with pieces of lines. Adding the weights (<span class="math inline">\(phi_d\)</span>) to the equation, and allowing them to be positive or negative means that those piece-wise functions can have a positive or negative gradient.</p>
+<p>See how fiddling with the parameters of the neurons below can get you close to the section of sine!<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8" data-startfrom="101" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 100;"><span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a>sine <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> <span class="dv">90</span>}<span class="op">,</span> (x<span class="op">,</span>i) <span class="kw">=&gt;</span> i<span class="op">*</span><span class="dv">4</span>)<span class="op">.</span><span class="fu">map</span>((x) <span class="kw">=&gt;</span> ({<span class="dt">x</span><span class="op">:</span>x<span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(x <span class="op">*</span> (<span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span><span class="op">/</span><span class="dv">180</span>))}))</span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span>}<span class="op">,</span></span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(sine<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span><span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span><span class="st">"y"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"sine"</span>})<span class="op">,</span></span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(net<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span><span class="st">"net"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"neural net"</span>})</span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a><span class="co">//  y: {domain: [0, 1]}</span></span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-8-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-8-2" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9" data-startfrom="112" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 111;"><span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>viewof phi0 <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">1</span><span class="op">,</span><span class="dv">1</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span><span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Phi 0"</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-9" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="grid">
+<div class="g-col-4">
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10" data-startfrom="120" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 119;"><span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span>}<span class="op">,</span></span>
+<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(neuron_1<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"pre"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"preactivation"</span>})<span class="op">,</span></span>
+<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(neuron_1<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"act"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"activation"</span>})</span>
+<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span>}<span class="op">,</span></span>
+<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>]}</span>
+<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-10" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11" data-startfrom="132" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 131;"><span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a>viewof neuron_1_form <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">form</span>(</span>
+<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb11-134"><a href="#cb11-134" aria-hidden="true" tabindex="-1"></a>    <span class="dt">phi</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span><span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Phi"</span>})<span class="op">,</span></span>
+<span id="cb11-135"><a href="#cb11-135" aria-hidden="true" tabindex="-1"></a>    <span class="dt">slope</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="fl">0.03</span><span class="op">,</span> <span class="fl">0.03</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.001</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Slope"</span>})<span class="op">,</span></span>
+<span id="cb11-136"><a href="#cb11-136" aria-hidden="true" tabindex="-1"></a>    <span class="dt">intercept</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">3</span><span class="op">,</span> <span class="dv">3</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span><span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"y-intercept"</span>})</span>
+<span id="cb11-137"><a href="#cb11-137" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-138"><a href="#cb11-138" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-11" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="g-col-4">
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12" data-startfrom="146" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 145;"><span id="cb12-146"><a href="#cb12-146" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb12-147"><a href="#cb12-147" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span>}<span class="op">,</span></span>
+<span id="cb12-148"><a href="#cb12-148" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb12-149"><a href="#cb12-149" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(neuron_2<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"pre"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"preactivation"</span>})<span class="op">,</span></span>
+<span id="cb12-150"><a href="#cb12-150" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(neuron_2<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"act"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"activation"</span>})</span>
+<span id="cb12-151"><a href="#cb12-151" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb12-152"><a href="#cb12-152" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span>}<span class="op">,</span></span>
+<span id="cb12-153"><a href="#cb12-153" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>]}</span>
+<span id="cb12-154"><a href="#cb12-154" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-12" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13" data-startfrom="158" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 157;"><span id="cb13-158"><a href="#cb13-158" aria-hidden="true" tabindex="-1"></a>viewof neuron_2_form <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">form</span>(</span>
+<span id="cb13-159"><a href="#cb13-159" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb13-160"><a href="#cb13-160" aria-hidden="true" tabindex="-1"></a>    <span class="dt">phi</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span><span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Phi"</span>})<span class="op">,</span></span>
+<span id="cb13-161"><a href="#cb13-161" aria-hidden="true" tabindex="-1"></a>    <span class="dt">slope</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="fl">0.03</span><span class="op">,</span> <span class="fl">0.03</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.001</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Slope"</span>})<span class="op">,</span></span>
+<span id="cb13-162"><a href="#cb13-162" aria-hidden="true" tabindex="-1"></a>    <span class="dt">intercept</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">3</span><span class="op">,</span> <span class="dv">3</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span><span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"y-intercept"</span>})</span>
+<span id="cb13-163"><a href="#cb13-163" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb13-164"><a href="#cb13-164" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-13" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="g-col-4">
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14" data-startfrom="172" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 171;"><span id="cb14-172"><a href="#cb14-172" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb14-173"><a href="#cb14-173" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span>}<span class="op">,</span></span>
+<span id="cb14-174"><a href="#cb14-174" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb14-175"><a href="#cb14-175" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(neuron_3<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"pre"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"preactivation"</span>})<span class="op">,</span></span>
+<span id="cb14-176"><a href="#cb14-176" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(neuron_3<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"act"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="st">"activation"</span>})</span>
+<span id="cb14-177"><a href="#cb14-177" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb14-178"><a href="#cb14-178" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span>}<span class="op">,</span></span>
+<span id="cb14-179"><a href="#cb14-179" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">type</span><span class="op">:</span> <span class="st">"linear"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>]}</span>
+<span id="cb14-180"><a href="#cb14-180" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-14" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15" data-startfrom="184" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 183;"><span id="cb15-184"><a href="#cb15-184" aria-hidden="true" tabindex="-1"></a>viewof neuron_3_form <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">form</span>(</span>
+<span id="cb15-185"><a href="#cb15-185" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb15-186"><a href="#cb15-186" aria-hidden="true" tabindex="-1"></a>    <span class="dt">phi</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span><span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Phi"</span>})<span class="op">,</span></span>
+<span id="cb15-187"><a href="#cb15-187" aria-hidden="true" tabindex="-1"></a>    <span class="dt">slope</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="fl">0.02</span><span class="op">,</span> <span class="fl">0.02</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.001</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Slope"</span>})<span class="op">,</span></span>
+<span id="cb15-188"><a href="#cb15-188" aria-hidden="true" tabindex="-1"></a>    <span class="dt">intercept</span><span class="op">:</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">3</span><span class="op">,</span> <span class="dv">3</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span><span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"y-intercept"</span>})</span>
+<span id="cb15-189"><a href="#cb15-189" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-190"><a href="#cb15-190" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-15" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>I hope having the sliders to play with gives you a good feel for how this works. As I said, I’m not trying to cover the theory of this, so if you want that, I can recommend the book I’m working through.</p>
+<p>This is a simple example, with just three hidden neurons in a single layer. I’ll work on a more complex example another time if anyone<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> tells me they want one.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16" data-startfrom="202" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 201;"><span id="cb16-202"><a href="#cb16-202" aria-hidden="true" tabindex="-1"></a>sin_x <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> <span class="dv">90</span>}<span class="op">,</span> (x<span class="op">,</span>i) <span class="kw">=&gt;</span> i<span class="op">*</span><span class="dv">4</span>)<span class="op">;</span></span>
+<span id="cb16-203"><a href="#cb16-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-204"><a href="#cb16-204" aria-hidden="true" tabindex="-1"></a>neuron_1 <span class="op">=</span> sin_x<span class="op">.</span><span class="fu">map</span>((x) <span class="kw">=&gt;</span> <span class="fu">activation</span>(x<span class="op">,</span> (d) <span class="kw">=&gt;</span> <span class="fu">linearfunc</span>(d<span class="op">,</span> neuron_1_form<span class="op">.</span><span class="at">slope</span><span class="op">,</span> neuron_1_form<span class="op">.</span><span class="at">intercept</span>)<span class="op">,</span> relu))</span>
+<span id="cb16-205"><a href="#cb16-205" aria-hidden="true" tabindex="-1"></a>neuron_2 <span class="op">=</span> sin_x<span class="op">.</span><span class="fu">map</span>((x) <span class="kw">=&gt;</span> <span class="fu">activation</span>(x<span class="op">,</span> (d) <span class="kw">=&gt;</span> <span class="fu">linearfunc</span>(d<span class="op">,</span> neuron_2_form<span class="op">.</span><span class="at">slope</span><span class="op">,</span> neuron_2_form<span class="op">.</span><span class="at">intercept</span>)<span class="op">,</span> relu))</span>
+<span id="cb16-206"><a href="#cb16-206" aria-hidden="true" tabindex="-1"></a>neuron_3 <span class="op">=</span> sin_x<span class="op">.</span><span class="fu">map</span>((x) <span class="kw">=&gt;</span> <span class="fu">activation</span>(x<span class="op">,</span> (d) <span class="kw">=&gt;</span> <span class="fu">linearfunc</span>(d<span class="op">,</span> neuron_3_form<span class="op">.</span><span class="at">slope</span><span class="op">,</span> neuron_3_form<span class="op">.</span><span class="at">intercept</span>)<span class="op">,</span> relu))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-16-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-16-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-16-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-16-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17" data-startfrom="209" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 208;"><span id="cb17-209"><a href="#cb17-209" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">net_output</span>(neurons<span class="op">,</span> phi) {</span>
+<span id="cb17-210"><a href="#cb17-210" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> input_x <span class="op">=</span> neurons[<span class="dv">0</span>]<span class="op">.</span><span class="fu">map</span>((d) <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">x</span>)<span class="op">;</span></span>
+<span id="cb17-211"><a href="#cb17-211" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> sum <span class="op">=</span> (r<span class="op">,</span> a) <span class="kw">=&gt;</span> r<span class="op">.</span><span class="fu">map</span>((b<span class="op">,</span> i) <span class="kw">=&gt;</span> a[i] <span class="op">+</span> b)<span class="op">;</span></span>
+<span id="cb17-212"><a href="#cb17-212" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> neuron_outputs <span class="op">=</span> neurons<span class="op">.</span><span class="fu">map</span>(</span>
+<span id="cb17-213"><a href="#cb17-213" aria-hidden="true" tabindex="-1"></a>    (neuron<span class="op">,</span> i) <span class="kw">=&gt;</span> neuron<span class="op">.</span><span class="fu">map</span>((x) <span class="kw">=&gt;</span> x<span class="op">.</span><span class="at">act</span><span class="op">*</span>phi[i<span class="op">+</span><span class="dv">1</span>]) </span>
+<span id="cb17-214"><a href="#cb17-214" aria-hidden="true" tabindex="-1"></a>  )<span class="op">.</span><span class="fu">reduce</span>(</span>
+<span id="cb17-215"><a href="#cb17-215" aria-hidden="true" tabindex="-1"></a>    sum</span>
+<span id="cb17-216"><a href="#cb17-216" aria-hidden="true" tabindex="-1"></a>  )<span class="op">.</span><span class="fu">map</span>((x) <span class="kw">=&gt;</span> x<span class="op">+</span>phi[<span class="dv">0</span>])<span class="op">;</span></span>
+<span id="cb17-217"><a href="#cb17-217" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> input_x<span class="op">.</span><span class="fu">map</span>((d<span class="op">,</span> i) <span class="kw">=&gt;</span> ({<span class="dt">x</span><span class="op">:</span> d<span class="op">,</span> <span class="dt">net</span><span class="op">:</span> neuron_outputs[i]}))</span>
+<span id="cb17-218"><a href="#cb17-218" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-17" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18" data-startfrom="222" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 221;"><span id="cb18-222"><a href="#cb18-222" aria-hidden="true" tabindex="-1"></a>net <span class="op">=</span> <span class="fu">net_output</span>([neuron_1<span class="op">,</span> neuron_2<span class="op">,</span> neuron_3]<span class="op">,</span> [phi0<span class="op">,</span> neuron_1_form<span class="op">.</span><span class="at">phi</span><span class="op">,</span> neuron_2_form<span class="op">.</span><span class="at">phi</span><span class="op">,</span> neuron_3_form<span class="op">.</span><span class="at">phi</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-18" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Hint: a negative slope and positive y-intercept with phi set to -1 on one neuron will get you the positive gradient for just the first section.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>literally any one person<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZ1bmN0aW9uIHJlbHUocHJlYWN0aXZhdGlvbikge1xuICByZXR1cm4gcHJlYWN0aXZhdGlvbiA8IDAgPyAwIDogcHJlYWN0aXZhdGlvblxufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0yIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiZnVuY3Rpb24gbGluZWFyZnVuYyh4LCBzbG9wZSwgaW50ZXJjZXB0KSB7XG4gIHJldHVybiBpbnRlcmNlcHQgKyBzbG9wZSAqIHhcbn1cbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMyIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZ1bmN0aW9uIGFjdGl2YXRpb24oeCwgcHJlLCBhY3QpIHtcbiAgbGV0IHByZV92YWwgPSBwcmUoeClcbiAgcmV0dXJuIHt4OiB4LCBwcmU6IHByZV92YWwsIGFjdDogYWN0KHByZV92YWwpfVxufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC00IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoidGVzdF92aXMgPSB7XG4gIGNvbnN0IHRlc3RfeCA9IEFycmF5LmZyb20oe2xlbmd0aDogODB9LCAoeCxpKSA9PiBpLzQpO1xuICBcbiAgcmV0dXJuIHRlc3RfeC5tYXAoKHgpID0+IGFjdGl2YXRpb24oeCwgKGQpID0+IGxpbmVhcmZ1bmMoZCwgdGVzdF9zbG9wZSwgdGVzdF9vZmZzZXQpLCByZWx1KSlcbn1cbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtNSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InZpZXdvZiB0ZXN0X3Nsb3BlID0gSW5wdXRzLnJhbmdlKFstMiwgMl0sIHt2YWx1ZTogMCwgc3RlcDogMC4xLCBsYWJlbDogXCJTbG9wZVwifSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtNiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InZpZXdvZiB0ZXN0X29mZnNldCA9IElucHV0cy5yYW5nZShbLTUsIDVdLCB7dmFsdWU6IDAsIHN0ZXA6IDAuNSwgbGFiZWw6IFwieS1pbnRlcmNlcHRcIn0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTciLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJQbG90LnBsb3Qoe1xuICBjb2xvcjoge2xlZ2VuZDogdHJ1ZX0sXG4gIG1hcmtzOiBbXG4gICAgUGxvdC5saW5lKHRlc3RfdmlzLCB7eDogXCJ4XCIsIHk6IFwicHJlXCIsIHN0cm9rZTogKCkgPT4gXCJwcmVhY3RpdmF0aW9uXCJ9KSxcbiAgICBQbG90LmxpbmUodGVzdF92aXMsIHt4OiBcInhcIiwgeTogXCJhY3RcIiwgc3Ryb2tlOiAoKSA9PiBcImFjdGl2YXRpb25cIn0pXG4gIF0sXG4gIHg6IHt0eXBlOiBcImxpbmVhclwifSxcbnk6IHt0eXBlOiBcImxpbmVhclwiLCBkb21haW46IFstMTAsIDEwXX1cbn0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTgiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJzaW5lID0gQXJyYXkuZnJvbSh7bGVuZ3RoOiA5MH0sICh4LGkpID0+IGkqNCkubWFwKCh4KSA9PiAoe3g6eCwgeTogTWF0aC5zaW4oeCAqIChNYXRoLlBJLzE4MCkpfSkpXG5QbG90LnBsb3Qoe1xuICBjb2xvcjoge2xlZ2VuZDogdHJ1ZX0sXG4gIG1hcmtzOiBbXG4gICAgUGxvdC5saW5lKHNpbmUsIHt4OlwieFwiLCB5OlwieVwiLCBzdHJva2U6ICgpID0+IFwic2luZVwifSksXG4gICAgUGxvdC5saW5lKG5ldCwge3g6IFwieFwiLCB5OlwibmV0XCIsIHN0cm9rZTogKCkgPT4gXCJuZXVyYWwgbmV0XCJ9KVxuICBdLFxuLy8gIHk6IHtkb21haW46IFswLCAxXX1cbn0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTkiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJ2aWV3b2YgcGhpMCA9IElucHV0cy5yYW5nZShbLTEsMV0sIHt2YWx1ZTowLCBzdGVwOiAwLjA1LCBsYWJlbDogXCJQaGkgMFwifSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMTAiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJQbG90LnBsb3Qoe1xuICBjb2xvcjoge2xlZ2VuZDogdHJ1ZX0sXG4gIG1hcmtzOiBbXG4gICAgUGxvdC5saW5lKG5ldXJvbl8xLCB7eDogXCJ4XCIsIHk6IFwicHJlXCIsIHN0cm9rZTogKCkgPT4gXCJwcmVhY3RpdmF0aW9uXCJ9KSxcbiAgICBQbG90LmxpbmUobmV1cm9uXzEsIHt4OiBcInhcIiwgeTogXCJhY3RcIiwgc3Ryb2tlOiAoKSA9PiBcImFjdGl2YXRpb25cIn0pXG4gIF0sXG4gIHg6IHt0eXBlOiBcImxpbmVhclwifSxcbiAgeToge3R5cGU6IFwibGluZWFyXCIsIGRvbWFpbjogWy0xLCAxXX1cbn0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTExIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoidmlld29mIG5ldXJvbl8xX2Zvcm0gPSBJbnB1dHMuZm9ybShcbiAge1xuICAgIHBoaTogSW5wdXRzLnJhbmdlKFstMSwgMV0sIHt2YWx1ZToxLCBzdGVwOiAwLjA1LCBsYWJlbDogXCJQaGlcIn0pLFxuICAgIHNsb3BlOiBJbnB1dHMucmFuZ2UoWy0wLjAzLCAwLjAzXSwge3ZhbHVlOiAwLCBzdGVwOiAwLjAwMSwgbGFiZWw6IFwiU2xvcGVcIn0pLFxuICAgIGludGVyY2VwdDogSW5wdXRzLnJhbmdlKFstMywgM10sIHt2YWx1ZTowLCBzdGVwOiAwLjA1LCBsYWJlbDogXCJ5LWludGVyY2VwdFwifSlcbiAgfVxuKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0xMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6IlBsb3QucGxvdCh7XG4gIGNvbG9yOiB7bGVnZW5kOiB0cnVlfSxcbiAgbWFya3M6IFtcbiAgICBQbG90LmxpbmUobmV1cm9uXzIsIHt4OiBcInhcIiwgeTogXCJwcmVcIiwgc3Ryb2tlOiAoKSA9PiBcInByZWFjdGl2YXRpb25cIn0pLFxuICAgIFBsb3QubGluZShuZXVyb25fMiwge3g6IFwieFwiLCB5OiBcImFjdFwiLCBzdHJva2U6ICgpID0+IFwiYWN0aXZhdGlvblwifSlcbiAgXSxcbiAgeDoge3R5cGU6IFwibGluZWFyXCJ9LFxuICB5OiB7dHlwZTogXCJsaW5lYXJcIiwgZG9tYWluOiBbLTEsIDFdfVxufSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMTMiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJ2aWV3b2YgbmV1cm9uXzJfZm9ybSA9IElucHV0cy5mb3JtKFxuICB7XG4gICAgcGhpOiBJbnB1dHMucmFuZ2UoWy0xLCAxXSwge3ZhbHVlOjEsIHN0ZXA6IDAuMDUsIGxhYmVsOiBcIlBoaVwifSksXG4gICAgc2xvcGU6IElucHV0cy5yYW5nZShbLTAuMDMsIDAuMDNdLCB7dmFsdWU6IDAsIHN0ZXA6IDAuMDAxLCBsYWJlbDogXCJTbG9wZVwifSksXG4gICAgaW50ZXJjZXB0OiBJbnB1dHMucmFuZ2UoWy0zLCAzXSwge3ZhbHVlOjAsIHN0ZXA6IDAuMDUsIGxhYmVsOiBcInktaW50ZXJjZXB0XCJ9KVxuICB9XG4pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTE0IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiUGxvdC5wbG90KHtcbiAgY29sb3I6IHtsZWdlbmQ6IHRydWV9LFxuICBtYXJrczogW1xuICAgIFBsb3QubGluZShuZXVyb25fMywge3g6IFwieFwiLCB5OiBcInByZVwiLCBzdHJva2U6ICgpID0+IFwicHJlYWN0aXZhdGlvblwifSksXG4gICAgUGxvdC5saW5lKG5ldXJvbl8zLCB7eDogXCJ4XCIsIHk6IFwiYWN0XCIsIHN0cm9rZTogKCkgPT4gXCJhY3RpdmF0aW9uXCJ9KVxuICBdLFxuICB4OiB7dHlwZTogXCJsaW5lYXJcIn0sXG4gIHk6IHt0eXBlOiBcImxpbmVhclwiLCBkb21haW46IFstMSwgMV19XG59KVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0xNSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InZpZXdvZiBuZXVyb25fM19mb3JtID0gSW5wdXRzLmZvcm0oXG4gIHtcbiAgICBwaGk6IElucHV0cy5yYW5nZShbLTEsIDFdLCB7dmFsdWU6MSwgc3RlcDogMC4wNSwgbGFiZWw6IFwiUGhpXCJ9KSxcbiAgICBzbG9wZTogSW5wdXRzLnJhbmdlKFstMC4wMiwgMC4wMl0sIHt2YWx1ZTogMCwgc3RlcDogMC4wMDEsIGxhYmVsOiBcIlNsb3BlXCJ9KSxcbiAgICBpbnRlcmNlcHQ6IElucHV0cy5yYW5nZShbLTMsIDNdLCB7dmFsdWU6MCwgc3RlcDogMC4wNSwgbGFiZWw6IFwieS1pbnRlcmNlcHRcIn0pXG4gIH1cbilcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMTYiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJzaW5feCA9IEFycmF5LmZyb20oe2xlbmd0aDogOTB9LCAoeCxpKSA9PiBpKjQpO1xuXG5uZXVyb25fMSA9IHNpbl94Lm1hcCgoeCkgPT4gYWN0aXZhdGlvbih4LCAoZCkgPT4gbGluZWFyZnVuYyhkLCBuZXVyb25fMV9mb3JtLnNsb3BlLCBuZXVyb25fMV9mb3JtLmludGVyY2VwdCksIHJlbHUpKVxubmV1cm9uXzIgPSBzaW5feC5tYXAoKHgpID0+IGFjdGl2YXRpb24oeCwgKGQpID0+IGxpbmVhcmZ1bmMoZCwgbmV1cm9uXzJfZm9ybS5zbG9wZSwgbmV1cm9uXzJfZm9ybS5pbnRlcmNlcHQpLCByZWx1KSlcbm5ldXJvbl8zID0gc2luX3gubWFwKCh4KSA9PiBhY3RpdmF0aW9uKHgsIChkKSA9PiBsaW5lYXJmdW5jKGQsIG5ldXJvbl8zX2Zvcm0uc2xvcGUsIG5ldXJvbl8zX2Zvcm0uaW50ZXJjZXB0KSwgcmVsdSkpXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTE3IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiZnVuY3Rpb24gbmV0X291dHB1dChuZXVyb25zLCBwaGkpIHtcbiAgbGV0IGlucHV0X3ggPSBuZXVyb25zWzBdLm1hcCgoZCkgPT4gZC54KTtcbiAgbGV0IHN1bSA9IChyLCBhKSA9PiByLm1hcCgoYiwgaSkgPT4gYVtpXSArIGIpO1xuICBsZXQgbmV1cm9uX291dHB1dHMgPSBuZXVyb25zLm1hcChcbiAgICAobmV1cm9uLCBpKSA9PiBuZXVyb24ubWFwKCh4KSA9PiB4LmFjdCpwaGlbaSsxXSkgXG4gICkucmVkdWNlKFxuICAgIHN1bVxuICApLm1hcCgoeCkgPT4geCtwaGlbMF0pO1xuICByZXR1cm4gaW5wdXRfeC5tYXAoKGQsIGkpID0+ICh7eDogZCwgbmV0OiBuZXVyb25fb3V0cHV0c1tpXX0pKVxufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0xOCIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Im5ldCA9IG5ldF9vdXRwdXQoW25ldXJvbl8xLCBuZXVyb25fMiwgbmV1cm9uXzNdLCBbcGhpMCwgbmV1cm9uXzFfZm9ybS5waGksIG5ldXJvbl8yX2Zvcm0ucGhpLCBuZXVyb25fM19mb3JtLnBoaV0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ3Rlc3Rfc2xvcGUnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgndGVzdF9vZmZzZXQnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgncGhpMCcpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCduZXVyb25fMV9mb3JtJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ25ldXJvbl8yX2Zvcm0nKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnbmV1cm9uXzNfZm9ybScpIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../data-analysis";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

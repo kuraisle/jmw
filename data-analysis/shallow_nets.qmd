@@ -1,0 +1,224 @@
+---
+title: Visualising shallow neural nets
+format:
+  html:
+    code-fold: true
+description: Visualising how shallow neural nets can approximate any function
+date-format: iso
+date: 2024-06-04
+categories:
+  - neural nets
+---
+
+I was on a bit of a roll writing these little articles frequently, but it has been a while since the last one. I'm writing this one at least partly with a very small baby resting on me, so maybe it's something to do with that.
+
+In any case, I've recently got a job which is more data focussed, so either I'll write a lot more of these as I learn lots of new things, or I'll have no time to write any more. The job will involve quite a bit of deep learning. I think most of the actual interacting with neural nets will be at a high level, but I'm working through Simon Prince's (so far) excellent [Understanding Deep Learning](https://udlbook.github.io/udlbook/) to get a better grasp of how they work under the hood. It has excellent text and figures to help build understanding. Even better, it has notebooks to work through. The notebooks are great for getting you to write some code, but I thought I could add some interactivity to the examples. Some of the explanations here will be quite brief; I'm not trying to duplicate the information in the book.
+
+## Neuron Activation
+
+### ReLU
+
+Here we start with the very basics. The Rectified Linear Unit (ReLU) function is a common activation function used in deep learning. It's simple to understand: if a value is negative, return zero. Otherwise, return the value.
+
+```{ojs}
+function relu(preactivation) {
+  return preactivation < 0 ? 0 : preactivation
+}
+```
+
+### Activation function
+
+An artificial neural net applies an activation function like ReLU to the output of a linear function.
+
+```{ojs}
+function linearfunc(x, slope, intercept) {
+  return intercept + slope * x
+}
+```
+
+```{ojs}
+function activation(x, pre, act) {
+  let pre_val = pre(x)
+  return {x: x, pre: pre_val, act: act(pre_val)}
+}
+```
+
+Here, we apply ReLU to a neuron. Play around with the sliders to get a feel for how changing the slope and y-intercept of the linear function changes the output of the neuron after applying the activation function.
+
+```{ojs}
+test_vis = {
+  const test_x = Array.from({length: 80}, (x,i) => i/4);
+  
+  return test_x.map((x) => activation(x, (d) => linearfunc(d, test_slope, test_offset), relu))
+}
+```
+
+::: {.grid}
+
+::: {.g-col-4}
+
+```{ojs}
+viewof test_slope = Inputs.range([-2, 2], {value: 0, step: 0.1, label: "Slope"})
+```
+
+:::
+
+::: {.g-col-4}
+
+```{ojs}
+viewof test_offset = Inputs.range([-5, 5], {value: 0, step: 0.5, label: "y-intercept"})
+```
+
+:::
+
+:::
+
+```{ojs}
+Plot.plot({
+  color: {legend: true},
+  marks: [
+    Plot.line(test_vis, {x: "x", y: "pre", stroke: () => "preactivation"}),
+    Plot.line(test_vis, {x: "x", y: "act", stroke: () => "activation"})
+  ],
+  x: {type: "linear"},
+y: {type: "linear", domain: [-10, 10]}
+})
+```
+
+## Universal approximation
+
+So how does a neural network use these activation functions? The answer is that they can be combined to approximate any function. For an example, let's see how three neurons can approximate a section of a sine function.
+
+The way you can combine the neurons is to add up their outputs, each multiplied by a constant. In the three-neuron example:
+
+$y = \phi_0 + \phi_1 h_1 + \phi_2 h_2 + \phi_3 h_3$
+
+where $h_d$ is the $d^{th}$ neuron. Since the ReLU neurons can be 0 in some region and >0 for the rest, you can use them to build up an approximation with pieces of lines. Adding the weights ($phi_d$) to the equation, and allowing them to be positive or negative means that those piece-wise functions can have a positive or negative gradient.
+
+See how fiddling with the parameters of the neurons below can get you close to the section of sine!^[Hint: a negative slope and positive y-intercept with phi set to -1 on one neuron will get you the positive gradient for just the first section.]
+
+```{ojs}
+sine = Array.from({length: 90}, (x,i) => i*4).map((x) => ({x:x, y: Math.sin(x * (Math.PI/180))}))
+Plot.plot({
+  color: {legend: true},
+  marks: [
+    Plot.line(sine, {x:"x", y:"y", stroke: () => "sine"}),
+    Plot.line(net, {x: "x", y:"net", stroke: () => "neural net"})
+  ],
+//  y: {domain: [0, 1]}
+})
+```
+
+```{ojs}
+viewof phi0 = Inputs.range([-1,1], {value:0, step: 0.05, label: "Phi 0"})
+```
+
+::: {.grid}
+
+::: {.g-col-4}
+
+```{ojs}
+Plot.plot({
+  color: {legend: true},
+  marks: [
+    Plot.line(neuron_1, {x: "x", y: "pre", stroke: () => "preactivation"}),
+    Plot.line(neuron_1, {x: "x", y: "act", stroke: () => "activation"})
+  ],
+  x: {type: "linear"},
+  y: {type: "linear", domain: [-1, 1]}
+})
+```
+
+```{ojs}
+viewof neuron_1_form = Inputs.form(
+  {
+    phi: Inputs.range([-1, 1], {value:1, step: 0.05, label: "Phi"}),
+    slope: Inputs.range([-0.03, 0.03], {value: 0, step: 0.001, label: "Slope"}),
+    intercept: Inputs.range([-3, 3], {value:0, step: 0.05, label: "y-intercept"})
+  }
+)
+```
+
+:::
+
+::: {.g-col-4}
+
+```{ojs}
+Plot.plot({
+  color: {legend: true},
+  marks: [
+    Plot.line(neuron_2, {x: "x", y: "pre", stroke: () => "preactivation"}),
+    Plot.line(neuron_2, {x: "x", y: "act", stroke: () => "activation"})
+  ],
+  x: {type: "linear"},
+  y: {type: "linear", domain: [-1, 1]}
+})
+```
+
+```{ojs}
+viewof neuron_2_form = Inputs.form(
+  {
+    phi: Inputs.range([-1, 1], {value:1, step: 0.05, label: "Phi"}),
+    slope: Inputs.range([-0.03, 0.03], {value: 0, step: 0.001, label: "Slope"}),
+    intercept: Inputs.range([-3, 3], {value:0, step: 0.05, label: "y-intercept"})
+  }
+)
+```
+
+:::
+
+::: {.g-col-4}
+
+```{ojs}
+Plot.plot({
+  color: {legend: true},
+  marks: [
+    Plot.line(neuron_3, {x: "x", y: "pre", stroke: () => "preactivation"}),
+    Plot.line(neuron_3, {x: "x", y: "act", stroke: () => "activation"})
+  ],
+  x: {type: "linear"},
+  y: {type: "linear", domain: [-1, 1]}
+})
+```
+
+```{ojs}
+viewof neuron_3_form = Inputs.form(
+  {
+    phi: Inputs.range([-1, 1], {value:1, step: 0.05, label: "Phi"}),
+    slope: Inputs.range([-0.02, 0.02], {value: 0, step: 0.001, label: "Slope"}),
+    intercept: Inputs.range([-3, 3], {value:0, step: 0.05, label: "y-intercept"})
+  }
+)
+```
+:::
+
+:::
+
+I hope having the sliders to play with gives you a good feel for how this works. As I said, I'm not trying to cover the theory of this, so if you want that, I can recommend the book I'm working through.
+
+This is a simple example, with just three hidden neurons in a single layer. I'll work on a more complex example another time if anyone^[literally any one person] tells me they want one.
+
+```{ojs}
+sin_x = Array.from({length: 90}, (x,i) => i*4);
+
+neuron_1 = sin_x.map((x) => activation(x, (d) => linearfunc(d, neuron_1_form.slope, neuron_1_form.intercept), relu))
+neuron_2 = sin_x.map((x) => activation(x, (d) => linearfunc(d, neuron_2_form.slope, neuron_2_form.intercept), relu))
+neuron_3 = sin_x.map((x) => activation(x, (d) => linearfunc(d, neuron_3_form.slope, neuron_3_form.intercept), relu))
+```
+
+```{ojs}
+function net_output(neurons, phi) {
+  let input_x = neurons[0].map((d) => d.x);
+  let sum = (r, a) => r.map((b, i) => a[i] + b);
+  let neuron_outputs = neurons.map(
+    (neuron, i) => neuron.map((x) => x.act*phi[i+1]) 
+  ).reduce(
+    sum
+  ).map((x) => x+phi[0]);
+  return input_x.map((d, i) => ({x: d, net: neuron_outputs[i]}))
+}
+```
+
+```{ojs}
+net = net_output([neuron_1, neuron_2, neuron_3], [phi0, neuron_1_form.phi, neuron_2_form.phi, neuron_3_form.phi])
+```

@@ -97,5 +97,8 @@
   },
   "data-analysis/expense_map.qmd": {
     "expense_map.html": "d96560d4"
+  },
+  "data-analysis/shallow_nets.qmd": {
+    "shallow_nets.html": "e718632c"
   }
 }
