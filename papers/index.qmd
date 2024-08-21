@@ -5,4 +5,4 @@ listing:
     sort: "date desc"
     categories: true
 ---
-I've been a biochemist for... 9 years?! Almost the first thing my undergraduate dissertation supervisor said to me was "Most of what you do in biology doesn't work", and he was right. Fortunately, if you stick with it and think about what you're doing carefully, sometimes you get some of it to work, and if you're lucky, you might even figure out why. Some of the things I've figured out why have been published, and here they are.
+I was a biochemist for... 9 years?! Almost the first thing my undergraduate dissertation supervisor said to me was "Most of what you do in biology doesn't work", and he was right. Fortunately, if you stick with it and think about what you're doing carefully, sometimes you get some of it to work, and if you're lucky, you might even figure out why. Some of the things I've figured out why have been published, and here they are.

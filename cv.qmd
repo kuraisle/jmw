@@ -2,16 +2,26 @@
 title: Curriculum Vitae
 toc: false
 ---
-I worked as a biochemist, both in academia and industry, for about nine years. During my PhD, I started using code to analyse my data, and using [machine learning](papers/pSRII_abs.qmd) to find patterns^[At the time, I kept finding myself reading about machine learning and thinking "isn't this just stats?"]. As well as continuing my development as a wet-lab scientist, I also improved my skills in machine learning and [bioinformatics](papers/functional divergence.qmd). I was really excited to have the opportunity to put my own stamp on each of my academic projects, including bringing image analysis and deep learning into my experiments^[papers in preparation]. My time working in a pharmaceutical contract research organisation gave me a new appreciation for the challenges of working with larger datasets. I'm keen to bring the expertise my research experience has given to new, data-focused projects.
+I worked as a biochemist, both in academia and industry, for about nine years. During my PhD, I started using code to analyse my data, and using [machine learning](papers/pSRII_abs.qmd) to find patterns^[At the time, I kept finding myself reading about machine learning and thinking "isn't this just stats?"]. As well as continuing my development as a wet-lab scientist, I also improved my skills in machine learning and [bioinformatics](papers/functional divergence.qmd). I was really excited to have the opportunity to put my own stamp on each of my academic projects, including bringing image analysis and deep learning into my experiments^[papers in preparation]. My time working in a pharmaceutical contract research organisation gave me a new appreciation for the challenges of working with larger datasets.
+
+Recently, I have started working full-time^[OK, four days a week] using my data science skills. Most of my time is spent developing a [tool that uses deep learning to harmonise health data](https://health-informatics-uon.github.io/lettuce), though I'm involved in a few other data projects. I'm really enjoying using that part of my brain more, though it's very strange not using a pipette.
+
 
 ## Professional History
+
+### University of Nottingham
+ | |
+ :---|---:|
+Postdoctoral Research Fellow | July 2024 - |
+
+I work on a tool, [LLettuce](https://health-informatics-uon.github.io/lettuce), that applies deep learning to healthcare data. The purpose of this is to help data engineers map their data onto standardised medical vocabularies so that it can be compared with other data without sharing confidential information. Most of my time is working for the School of Medicine, but some is for the Digital Research Service, so I'm gaining valuable software development experience, too.
 
 ### Excellerate Biosciences
  | |
 :---|---:|
  Senior Scientist | October 2022 - April 2023 |
 
-In my most recent job, I ran *in vitro* screening assays for clients and developed new assays. As well as being responsible for routine analysis of screening data, I also carried out bespoke analyses as required, often preparing material for client meetings.
+I ran *in vitro* screening assays for clients and developed new assays. As well as being responsible for routine analysis of screening data, I also carried out bespoke analyses as required, often preparing material for client meetings.
 
 
 ### University of Nottingham

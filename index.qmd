@@ -19,10 +19,11 @@ about:
 toc: false
 ---
 
-I am James Mitchell-White, a scientist from the UK. I have worked as a biochemist, and you may be interested in my [published works](papers/index.qmd). My research focuses on the dynamics of membrane proteins, starting with the use of models for the folding of α-helical membrane proteins, and moving on to the transport mechanism of membrane transporters.
+I am James Mitchell-White, a scientist from the UK.
+I'm currently working as a postdoctoral research fellow in health informatics. I'm carrying out research into the use of natural language processing, including large language models, to make data [FAIR](https://www.go-fair.org/fair-principles/).
+I previously worked as a biochemist, and you may be interested in my [published works](papers/index.qmd).
+That research focused on the dynamics of membrane proteins, starting with the use of models for the folding of α-helical membrane proteins, and moving on to the transport mechanism of membrane transporters.
 
-I used to have a lot of hobbies, now I just have a kid. I can't help but play around with a few side projects though, and I'm starting to put some of them [here](data-analysis/index.qmd).
+I used to have a lot of hobbies, now I just have kids. I can't help but play around with a few side projects though, and I'm starting to put some of them [here](data-analysis/index.qmd).
 
 If you find any of this interesting and have questions this site doesn't answer, please get in touch!
-
-
