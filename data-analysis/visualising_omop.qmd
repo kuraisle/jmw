@@ -1,0 +1,40 @@
+---
+title: Visualising OMOP
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+description: A work project using Observable Framework
+date-format: iso
+categories:
+  - data analysis
+date: 2024-09-23
+execute:
+  freeze: true
+---
+
+I've been working in my new job for nearly three months now. Learning more about how to develop software has had a steep learning curve. [The project](https://github.com/Health-Informatics-UoN/lettuce/) uses large language models to help data engineers standardise medical data. I've learned a lot there too, though my theoretical foundation was a lot stronger to start with.
+Part of what I'm trying to do with it is to hard-code more knowledge about the system the application is designed to help with, as light-weight heuristics will be computationally less intensive, and we want to make something that can be deployed on a laptop. To do this, I needed to know a bit more about the context. What started off as notes and visualisations for my own understanding might be useful for others, so they're now deployed as a GitHub pages [site](https://health-informatics-uon.github.io/visualise_omop/) in my department's org.
+
+## Tooling
+I used Observable Framework to build the site. The rough idea is the same as Quarto, which I used to build this site. You write markdown, put in code blocks where you write some data analysis, and you get out something attractive at the end. Observable is only for websites, where Quarto lets you export other documents like pdfs and presentations.
+As such, it has a lot of features for making nice sites, most of which I didn't use.
+The formatting options make it easier to write more of a dashboard than regular Quarto (though I'm aware Quarto have recently made a dashboard format).
+Another upside of Framework is that you write normal javascript, rather than mimicking Observable notebooks' syntax. Overall, it was a really nice experience. The site is a work in progress, so I'm looking forward to adding to that, and Framework is definitely an option I would consider for building a dashboard in the future.
+
+## The ideas
+### The Observational Medical Outcomes Partnership (OMOP) Commmon Data Model (CDM)
+Health researchers have a problem. A systematic data analysis needs data from different sources. Sharing the data is difficult for two big reasons:
+
+1. Data are confidential
+2. The sources of data were created in different formats
+
+The [OMOP-CDM](https://www.ohdsi.org/data-standardization/) seeks to solve this. It provides a data model that a community has agreed upon, and have devised analysis methods for the standardised format. This means all the data can be analysed in the same way. It also means that federated analysis can be carried out, using the common data model, so data don't have to leave their environment, preserving confidentiality.
+
+### OMOP concepts
+The problem is that converting the data to the OMOP-CDM is hard. Conversion to the CDM is based on creating a "mapping" from your data's ideas to "concepts" in the standardised vocabularies. This means that someone has to go through the descriptions of data collected (e.g. questions in a questionnaire), break the language down into its parts, and find something in the OMOP vocabularies to match each part. I had been writing queries to the database of concepts without any real idea of the proportions of the data. How many different domains are there? How many concepts are in each domain? I made a treemap that you can click through to explore different classifications of OMOP concepts that helps me get a sense of what OMOP-CDM cares about.
+
+### Concept relationships
+Concepts in the common data model have relationships to one another. What relates to what in which ways is an important part of the structure. I made several visualisations of how concepts from different domains relate to one another. This is pretty tricky to visualise. My favourite in [this series](https://health-informatics-uon.github.io/visualise_omop/relationships) is a Sankey diagram that shows the types of relationships concepts from one domain have to the other domains. This part is definitely a work in progress. Something I really want to do is to work on getting some abstractions out of the graph of all relationships^[I had wanted to visualise this graph, but there are >15 million relationships so my naive approach didn't work].
+
+

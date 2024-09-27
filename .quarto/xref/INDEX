@@ -100,5 +100,8 @@
   },
   "data-analysis/shallow_nets.qmd": {
     "shallow_nets.html": "e718632c"
+  },
+  "data-analysis/visualising_omop.qmd": {
+    "visualising_omop.html": "b240a2b9"
   }
 }
