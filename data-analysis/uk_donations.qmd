@@ -1,0 +1,22 @@
+---
+title: "UK political donations"
+draft: true
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+description: "Exploring how donations to the UK's political parties compare"
+date-format: iso
+categories:
+  - data analysis
+date: 2024-09-27
+---
+
+I'm interested to know more about the donations made to the UK's political parties. More specifically, I'm curious to know how the donations are spread among donors. The information is readily available from the electoral comission. I've downloaded everything from the start of 2014 to the end of 2023. I omitted donations from the parties themselves
+
+```{python}
+import polars as pl
+
+donations = pl.read_csv("./data/uk_pol_donation_records2013-2023.csv")
+donations
+```
