@@ -1,6 +1,5 @@
 ---
 title: "UK political donations"
-draft: true
 format:
   html:
     code-fold: true
@@ -9,14 +8,446 @@ description: "Exploring how donations to the UK's political parties compare"
 date-format: iso
 categories:
   - data analysis
-date: 2024-09-27
+date: 2024-10-14
 ---
 
-I'm interested to know more about the donations made to the UK's political parties. More specifically, I'm curious to know how the donations are spread among donors. The information is readily available from the electoral comission. I've downloaded everything from the start of 2014 to the end of 2023. I omitted donations from the parties themselves
+## The data
+
+I'm interested to know more about the donations made to the UK's political parties. More specifically, I'm curious to know how the donations are spread among donors. The information is readily available from the electoral comission. I've downloaded everything from the start of 2001 to the end of 2023. I omitted donations from the parties themselves, which I think is just them moving money from the central office into constituencies.
 
 ```{python}
 import polars as pl
+import altair as alt
+import vegafusion
+alt.data_transformers.enable("vegafusion")
+import matplotlib.pyplot as plt
+import numpy as np
+from IPython.display import display
+```
 
-donations = pl.read_csv("./data/uk_pol_donation_records2013-2023.csv")
-donations
+Let's get an overview of the data.
+
+```{python}
+donations = pl.read_csv(
+  "./data/uk_pol_donations.csv"
+).select(
+  pl.col("*").exclude(
+    "ECRef", "Postcode", "CompanyRegistrationNumber", "PurposeOfVisit", "DonationAction", "ReceivedDate", "ReportedDate", "ReportingPeriodName", "AccountingUnitId", "RegulatedEntityType"
+  )
+)
+donations.describe()
+```
+
+There's some cleaning required here. The dates and donation value are strings, but we want to convert them to dates and numbers.
+
+```{python}
+donations = donations.with_columns(
+  (pl.col("Value").str.replace_all(r",|£", "").cast(pl.Float32)),
+  (pl.col("AcceptedDate").str.to_date("%d/%m/%Y")),
+)
+donations.select(
+  ["Value", "AcceptedDate"]
+).describe()
+```
+
+## Plots
+### Totals over time
+
+I'm going to mostly work with the values of donations aggregated by year.
+A year is long enough to get a good number of donations to look at, but granular enough that we can see some patterns, like the big spikes for the 2010, 2019, and 2024 elections.
+
+```{python}
+donations.select(
+  ["Value", "AcceptedDate"]
+).sort(
+  "AcceptedDate"
+).group_by_dynamic(
+  "AcceptedDate", every="1y"
+).agg(
+  pl.col("Value").sum().alias("Total Donations (£)")
+).plot.bar(
+  x="AcceptedDate",
+  y="Total Donations (£)"
+).properties(width="container")
+```
+
+I'm going to concentrate on the three main parties: the Conservatives, Labour, and Liberal Democrats.
+I've chucked in Reform UK, simply because the ~£11 million they were donated in 2019 put them, briefly, in the same league, financially.
+
+```{python}
+main_parties = ["Labour Party", "Conservative and Unionist Party", "Liberal Democrats", "Reform UK"]
+party_colours = ["#d50000", "#0087dc", "#FDBB30", "cyan"]
+
+donations.select(
+  ["Value", "RegulatedEntityName", "AcceptedDate"]
+).filter(
+  pl.col("RegulatedEntityName").is_in(main_parties)
+).sort(
+  "AcceptedDate"
+).group_by_dynamic(
+  "AcceptedDate", every="1y", group_by="RegulatedEntityName"
+).agg(
+  pl.col("Value").sum().alias("Total Donations (£)")
+).plot.bar(
+  x="AcceptedDate",
+  y="Total Donations (£)",
+  color=alt.Color("RegulatedEntityName", scale=alt.Scale(domain=main_parties, range=party_colours)),
+).properties(width="container")
+```
+
+## Median donation value
+
+The total donations aren't the only interesting metric here. I want to know what the average value of a donation is here.
+I won't use the mean, as the values are very skewed^[breaking the illusion of me doing this "as live", there's a bit on how hilariously skewed the distribution is below], but the more robust median. I've included the interquartile range as bands either side of the line.
+
+```{python}
+donation_four_parties = donations.with_columns(
+  pl.col("AcceptedDate").dt.year().alias("Year")
+).filter(
+  pl.col("RegulatedEntityName").is_in(main_parties)
+)
+
+line_four_parties = alt.Chart(donation_four_parties).mark_line().encode(
+  x='Year',
+  y='median(Value)',
+  color=alt.Color("RegulatedEntityName", scale=alt.Scale(domain=main_parties, range=party_colours))
+).properties(width="container")
+
+band_four_parties = alt.Chart(donation_four_parties).mark_errorband(extent='iqr').encode(
+  x='Year',
+  y=alt.Y('Value').title('Median Value (£)'),
+  color=alt.Color("RegulatedEntityName", scale=alt.Scale(domain=main_parties, range=party_colours))
+)
+
+band_four_parties + line_four_parties
+```
+
+I'll admit, I included Reform UK for humour here. Let's just look at the three major parties.
+
+```{python}
+donation_three_parties = donations.with_columns(
+  pl.col("AcceptedDate").dt.year().alias("Year")
+).filter(
+  pl.col("RegulatedEntityName").is_in(main_parties[:-1])
+)
+
+line_three_parties = alt.Chart(donation_three_parties).mark_line().encode(
+  x='Year',
+  y='median(Value)',
+  color=alt.Color("RegulatedEntityName", scale=alt.Scale(domain=main_parties[:-1], range=party_colours[:-1]))
+).properties(width="container")
+
+band_three_parties = alt.Chart(donation_three_parties).mark_errorband(extent='iqr').encode(
+  x='Year',
+  y=alt.Y('Value').title('Median Value (£)'),
+  color=alt.Color("RegulatedEntityName", scale=alt.Scale(domain=main_parties[:-1], range=party_colours[:-1]))
+)
+
+band_three_parties + line_three_parties
+```
+
+Remarkably, between 2006 and 2012, the median value of donations to the Conservatives was greater than the 75th centile of Labour.
+Labour and the Liberal Democrats had similar distributions of donations until 2020.
+The post-coalition elections were not kind to the Lib Dems.
+
+
+
+```{python}
+donations.with_columns(
+  pl.col("AcceptedDate").dt.year().alias("Year")
+).select(
+  ["Value", "Year", "NatureOfDonation"]
+).sort(
+  pl.col("Year")
+).group_by(
+  ["Year", "NatureOfDonation"]
+).agg(
+  pl.col("Value").sum()
+).plot.line(
+  x="Year",
+  y="Value",
+  color="NatureOfDonation"
+).properties(width="container")
+```
+
+There's a field "NatureOfDonation" in the dataset. There are a few kinds of state funding in here that don't tell us anything about who is donating to the parties, so we can ignore those.
+
+- Short money: money given to opposition parties in the House of Commons
+- Cranbourne money: money given to opposition parties in the House of Lords
+- Assistance for Parties (Scottish Parliament): money given to parties in the Scottish Parliament
+- Financial Assistance for Parties in NI Assembly
+- Policy development grant
+
+The main thing to take away is that most of the money doesn't have a "NatureOfDonation". There's also "DonationType"
+
+```{python}
+donations.filter(
+  pl.col("NatureOfDonation").is_null()
+).select(
+  ["DonationType", "Value"]
+).group_by(
+  "DonationType"
+).agg(
+  count=pl.len(),
+  TotalValue=pl.sum("Value")
+)
+```
+
+That seems more important to us. I'm unclear on what "Visit" is, but the value is low, so I'll leave it in. "Cash" is obvious (and something we care about). The other two are types of bequest left in a will.
+
+Donations look broadly the same if we filter out the state funding.
+
+```{python}
+selected_donations = donations.with_columns(
+  pl.col("AcceptedDate").dt.year().alias("Year"),
+  pl.col("NatureOfDonation").fill_null(strategy="zero")
+).select(
+  ["DonationType", "NatureOfDonation", "Value", "Year", "RegulatedEntityName"]
+).filter(
+  [
+    pl.col("NatureOfDonation").is_in(
+      [
+        "Assistance for Parties (Scottish Parliament)",
+        "Cranborne Money (House of Lords)",
+        "Financial Assistance for Parties in NI Assembly",
+        "Policy Development Grant",
+        "Short Money (House of Commons)",
+        "Start Up Grant (Discontinued)"
+      ]
+    ).not_(),
+    pl.col("RegulatedEntityName").is_in(main_parties)
+  ]
+)
+```
+
+```{python}
+selected_donations_3 = selected_donations.filter(pl.col("RegulatedEntityName") != "Reform UK")
+line_selected_donations_3 = alt.Chart(selected_donations_3).mark_line().encode(
+  x='Year',
+  y='median(Value)',
+  color=alt.Color("RegulatedEntityName", scale=alt.Scale(domain=main_parties[:-1], range=party_colours[:-1]))
+).properties(width="container")
+
+band_selected_donations_3 = alt.Chart(selected_donations_3).mark_errorband(extent='iqr').encode(
+  x='Year',
+  y=alt.Y('Value').title('Median Value (£)'),
+  color=alt.Color("RegulatedEntityName", scale=alt.Scale(domain=main_parties[:-1], range=party_colours[:-1]))
+)
+
+band_selected_donations_3 + line_selected_donations_3
+```
+
+OK, so much for the how the value of donations is distributed. It's quite interesting that the Conservatives have received a fairly similar distribution of donations, except in election years, where the median value (and total) spikes.
+The exception is the last election cycle.
+
+Meanwhile, Labour and the Liberal Democrats have had a similar distribution (though different total value) to one another until the last election cycle, where Labour's donations have steadily increased, and the Liberal Democrats' have dropped.
+
+## The Donors
+
+Now, who is giving all this money? Here are the top 10 donors:
+
+```{python}
+who_donations = donations.select(
+  pl.exclude(["AccountingUnitId",
+              "AccountingUnitName",
+              "AccountingUnitsAsCentralParty",
+              "IsSponsorship",
+              "RegulatedDoneeType",
+              "IsReportedPrePoll",
+              "IsBequest",
+              "IsAggregation",
+              "RegulatedEntityId",
+              "CampaigningName",
+              "IsIrishSource"])
+).with_columns(
+  pl.col("NatureOfDonation").fill_null(strategy="zero")
+).filter(
+  pl.col("NatureOfDonation").is_in(
+      [
+        "Assistance for Parties (Scottish Parliament)",
+        "Cranborne Money (House of Lords)",
+        "Financial Assistance for Parties in NI Assembly",
+        "Policy Development Grant",
+        "Short Money (House of Commons)",
+        "Start Up Grant (Discontinued)"
+      ]
+  ).not_()
+).sort("Value", descending=True)
+
+biggest_donors = who_donations.select(
+  ["DonorName", "RegulatedEntityName", "Value"]
+).group_by(["DonorName", "RegulatedEntityName"]).sum().sort(
+  "Value", descending=True
+).pivot(
+  index="DonorName",
+  on="RegulatedEntityName"
+).head(10)
+
+biggest_donors[[s.name for s in biggest_donors if not (s.null_count() == biggest_donors.height)]]
+```
+
+So there's a lot of money coming to Labour from the unions. This makes sense with the history of the Labour party.
+
+There's also the "National Conservative Draws Society", which is a pretty sketchy way of [concealing donations to political parties](https://www.theguardian.com/politics/2015/mar/13/conservative-party-given-nearly-500k-in-concealed-donations).
+
+Then, there are the private donors. Journalists sometimes make a noise about how the unions and the Labour party are tied together, but there are three guys there who have donated about £35 million between them.
+
+I spotted something here. Christopher Harborne [made the news](https://www.theguardian.com/politics/2023/jan/12/boris-johnson-given-1m-donation-by-former-brexit-party-backer) donating £1 million to Boris Johnson, which should have been recorded. There's a "DonorId" field in the dataset. Maybe we'll see the donation if we look at DonorId instead.
+
+```{python}
+biggest_donors_by_id = who_donations.select(
+  ["DonorId", "RegulatedEntityName", "Value"]
+).group_by(["DonorId", "RegulatedEntityName"]).sum().sort(
+  "Value", descending=True
+).pivot(
+  index="DonorId",
+  on="RegulatedEntityName"
+).head(10)
+
+biggest_donors_by_id[[s.name for s in biggest_donors_by_id if not (s.null_count() == biggest_donors_by_id.height)]]
+```
+
+Still not there. If we look at all the Christophers Harborne in the data, we can see something I find very annoying.
+
+```{python}
+with pl.Config(tbl_rows=-1):
+  display(who_donations.select(
+    ["DonorId", "DonorName", "Value"]
+  ).filter(
+    pl.col("DonorName").str.contains("Harborne"),
+    pl.col("DonorName").str.contains("Christopher")
+  ).group_by(
+    ["DonorName", "DonorId"]
+  ).sum().sort("Value", descending=True))
+```
+
+Mr Christopher Charles Sherriff Harborne has donated with a bunch of variations on his name. What's the point of a DonorId that doesn't track this?! A couple of these might be other Christophers, but I'm willing to bet a lot of these are the same guy. It might not be deliberate obfuscation, but it should be clearer who is the same person donating multiple times.
+
+Anyway, let's look at a breakdown of donor types by party:
+
+```{python}
+who_donations.select(
+  ["RegulatedEntityName", "DonorStatus", "Value"]
+).filter(
+  pl.col("RegulatedEntityName").is_in(main_parties)
+).group_by(
+  ["RegulatedEntityName", "DonorStatus"]
+).sum().plot.bar(
+  x=alt.X("RegulatedEntityName", axis=alt.Axis(labelAngle=-45)),
+  y="Value",
+  color="DonorStatus"
+).properties(width="container")
+```
+
+It's quite astonishing how much of their money Labour gets from the unions! If they didn't get their union money, their donations would be pretty similar to the Liberal Democrats.
+
+If you look at the top 20 individual donors, you can see another instance of someone donating twice with different names.
+You can also see that political donations at the top haven't even heard of gender equality.
+
+```{python}
+with pl.Config(tbl_rows=20):
+  biggest_donors_individual = who_donations.select(
+    ["DonorName", "DonorStatus", "RegulatedEntityName", "Value"]
+  ).filter(
+    pl.col("DonorStatus") == "Individual"
+  ).select(
+    pl.exclude("DonorStatus")
+  ).group_by(["DonorName", "RegulatedEntityName"]).sum().sort(
+    "Value", descending=True
+  ).pivot(
+    index="DonorName",
+    on="RegulatedEntityName"
+  ).head(20)
+
+  display(biggest_donors_individual[[s.name for s in biggest_donors_individual if not (s.null_count() == biggest_donors_individual.height)]])
+```
+
+```{python}
+labour_donations = [np.array(donations.filter(
+  pl.col("RegulatedEntityName") == "Labour Party"
+).with_columns(
+  pl.col("AcceptedDate").dt.year().alias("Year")
+).filter(
+  pl.col("Year") == year
+).select(
+  "Value"
+)).reshape(-1) for year in range(2001, 2024)]
+
+con_donations = [np.array(donations.filter(
+  pl.col("RegulatedEntityName") == "Conservative and Unionist Party"
+).with_columns(
+  pl.col("AcceptedDate").dt.year().alias("Year")
+).filter(
+  pl.col("Year") == year
+).select(
+  "Value"
+)).reshape(-1) for year in range(2001, 2024)]
+
+lib_dem_donations = [np.array(donations.filter(
+  pl.col("RegulatedEntityName") == "Liberal Democrats"
+).with_columns(
+  pl.col("AcceptedDate").dt.year().alias("Year")
+).filter(
+  pl.col("Year") == year
+).select(
+  "Value"
+)).reshape(-1) for year in range(2001, 2024)]
+```
+
+I don't really have any conclusions here. I hadn't realised quite how much money was coming in to political parties. This isn't everything; if you donate [below certain thresholds](https://www.electoralcommission.org.uk/political-party-donations-and-loans-great-britain/which-donations-and-loans-do-you-need-report/reporting-donations-and-loans-examples) you don't have to report anything. Given the eye-watering sums at the top though, you do get a good sense of how much money everyone is getting.
+
+I also hadn't realised how dependent the Labour party is on unions. Another time, I might look into why the median value of their donations has increased recently, but this is already long enough.
+
+
+## Bonus
+
+I love a violin plot, or a box plot to compare distributions. However, this time, the values are so skewed that when I tried it I got this:
+
+```{python}
+fig, ax = plt.subplots()
+
+lab_violins = ax.violinplot(labour_donations, [x-0.2 for x in range(2001,2024)], widths=0.5)
+con_violins = ax.violinplot(con_donations, [x for x in range(2001,2024)], widths=0.5)
+lib_dem_violins = ax.violinplot(lib_dem_donations, [x+0.2 for x in range(2001,2024)], widths=0.5)
+
+for pc in lab_violins['bodies']:
+  pc.set_facecolor(party_colours[0])
+for pc in con_violins['bodies']:
+  pc.set_facecolor(party_colours[1])
+for pc in lib_dem_violins['bodies']:
+  pc.set_facecolor(party_colours[2])
+
+ax.set_xlabel("Accepted Year")
+ax.set_ylabel("Value (£)")
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+plt.show()
+```
+
+The maximum values are so high that you can't even see the distribution. In any case, they're kind of boring, and just showing the median and interquartile ranges is more informative.
+
+```{python}
+fig, ax = plt.subplots()
+
+lab_violins = ax.violinplot(labour_donations, [x-0.2 for x in range(2001,2024)], widths=0.5, showextrema=False)
+con_violins = ax.violinplot(con_donations, [x for x in range(2001,2024)], widths=0.5, showextrema=False)
+lib_dem_violins = ax.violinplot(lib_dem_donations, [x+0.2 for x in range(2001,2024)], widths=0.5, showextrema=False)
+
+for pc in lab_violins['bodies']:
+  pc.set_facecolor(party_colours[0])
+for pc in con_violins['bodies']:
+  pc.set_facecolor(party_colours[1])
+for pc in lib_dem_violins['bodies']:
+  pc.set_facecolor(party_colours[2])
+
+ax.set_xlabel("Accepted Year")
+ax.set_ylabel("Value (£)")
+ax.set_ylim((0,2.5e5))
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+plt.show()
 ```
