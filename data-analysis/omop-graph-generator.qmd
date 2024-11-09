@@ -4,6 +4,10 @@ description: Taking data from a relational database and turning it into graphs w
 format:
   html:
     highlight-style: github
+date-format: iso
+date: 2024-11-09
+categories:
+  - work projects
 ---
 
 I've been working at my new job for nearly four months now.

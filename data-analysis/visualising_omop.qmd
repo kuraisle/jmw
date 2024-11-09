@@ -8,6 +8,7 @@ description: A work project using Observable Framework
 date-format: iso
 categories:
   - data analysis
+  - work projects
 date: 2024-09-23
 execute:
   freeze: true
