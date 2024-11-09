@@ -1,0 +1,457 @@
+---
+title: Generating graphs from relational data
+description: Taking data from a relational database and turning it into graphs with Rust
+format:
+  html:
+    highlight-style: github
+---
+
+I've been working at my new job for nearly four months now.
+The idea is to use neural nets to predict good "mappings" from medical metadata to a standard vocabulary, the OMOP Common Data Model (CDM).
+Previous approaches have used string similarity and other classic natural language processing techniques to do the same task.
+Part of the strength of this approach is that it's trainable: using data we can get a model that has a good internal representation of which source terms should be mapped to which terms in the common data model.
+
+The problem then becomes what should that representation be?
+The OMOP-CDM is built of "concepts": snippets of text that are meant to represent an idea.
+These range from the name of a drug to something like the idea of applying for a passport application.
+Each source term can map to one or more OMOP concept.
+Another part of the OMOP-CDM is relationships.
+Part of what a concept means is held in how it relates to other concepts.
+
+Currently, the tool we're building (called Lettuce), is based solely on a text understanding of concepts.
+This works pretty well; we use Large Language Models which have a general understanding of language that transfers reasonably well to the language used.
+The performance improves when we add a vector search on the embeddings of concepts, as the embeddings models have that general understanding of language too.
+However, the shortness of the concept names means there's not a great deal of context there.
+Looking at the concepts in terms of their relationships naturally made me think of a graph representation of concepts.
+
+## Relational data
+The data model is held as tables in a relational database.
+There's a concept table, where each row describes a single concept, and a relationship table, where each row describes two concepts and the nature of the relationship between them.
+The SQL to find the relationships to a single concept is simple enough:
+
+```sql
+SELECT concept_id_1, relationship_id, concept_id_2
+FROM cdm.concept_relationship
+WHERE concept_id_1 = {concept}
+```
+
+All relationships are shown twice in the relationships table: once for each direction the relationship runs.
+
+The next step was to grab the names from the concept table:
+
+```sql
+SELECT
+  c.concept_name,
+  cr.relationship_id,
+  rc.concept_name AS related_concept_name
+FROM
+  cdm.concept c
+JOIN
+  cdm.concept_relationship cr ON c.concept_id = cr.concept_id_1
+JOIN
+  cdm.concept rc ON cr.concept_id_2 = rc.concept_id
+WHERE
+  c.concept_id = {concept}
+```
+
+This query starts from the concept table, joins it to the concept relationship table where the concept id matches, and joins back to the concept table for related concepts, then gets back the fields for the names and relationships.
+I hope that all makes sense.
+It gets more complicated from here.
+
+I didn't want to just retrieve the immediate relationships, but the wider context to an arbitrary level.
+I knew from programming in what I think of as ordinary languages that the solution would be recursion, but my SQL thus far has been essentially shoehorning my experience with pandas into a completely different paradigm, so I had no idea how to do it.
+
+### Common Table Expressions
+When writing an SQL query, you might have some complex query where the logic for getting the information you want gets convoluted.
+Common table expressions (CTEs) let you write more ergonomic queries by letting you create temporary tables and then query those. 
+For example, if I wanted to run some query over the concepts related to the one I started with, I could define this with a CTE like this
+```sql
+WITH related_concepts AS (
+SELECT
+  c.concept_name,
+  cr.relationship_id,
+  rc.concept_name AS related_concept_name
+FROM
+  cdm.concept c
+JOIN
+  cdm.concept_relationship cr ON c.concept_id = cr.concept_id_1
+JOIN
+  cdm.concept rc ON cr.concept_id_2 = rc.concept_id
+WHERE c.concept_id = {concept}
+) -- other logic here
+```
+
+### Recursive queries
+Something useful you can do with CTEs is recursion in your SQL.
+The temporary tables you create are defined by the result of a query, and with the addition of the recursive modifier, this means they can be used to define recursive queries.
+The basic structure is
+```sql
+WITH RECURSIVE recursive_query AS (
+-- Base case
+
+UNION
+
+-- Recursive case
+) -- other logic here
+```
+For these queries, the base case is evaluated, and the results placed in a temporary table.
+For the rows of that temporary table, called the working table, the recursive case is evaluated.
+The results of those queries are placed in the working table too^[This is slightly more complicated, but I'm not the documentation for a database engine].
+This continues until the working table is empty.
+This would go on forever, except you put some constraint, so that at some point nothing is put back in the working table.
+
+In my final query, the base case that gets evaluated first, is the CTE above which fetches the related concepts for some concept, with small modifications:
+
+#### Base case
+
+```sql
+SELECT 
+     c.concept_id,
+     c.concept_name,
+     c.standard_concept,
+     cr.relationship_id,
+     cr.concept_id_2 AS related_concept_id,
+     rc.concept_name AS related_concept_name,
+     rc.standard_concept AS related_standard_concept,
+     1 AS level,
+     ARRAY[c.concept_id] AS visited_concepts
+ FROM 
+     cdm.concept c
+ JOIN 
+     cdm.concept_relationship cr ON c.concept_id = cr.concept_id_1
+ JOIN 
+     cdm.concept rc ON cr.concept_id_2 = rc.concept_id
+ WHERE 
+     c.concept_id = {starting_concept}
+```
+
+The first modification is that a few more fields are collected from the tables.
+There are two more fields at the end that we generate as part of the recursion, which will make sense when I describe the recursive case.
+The joins and `WHERE` clause are the same.
+
+#### Recursive case
+
+```sql
+SELECT 
+    rc.concept_id,
+    rc.concept_name,
+    rc.standard_concept,
+    cr.relationship_id,
+    cr.concept_id_2 AS related_concept_id,
+    next_c.concept_name AS related_concept_name,
+    next_c.standard_concept AS related_standard_concept,
+    ch.level + 1 AS level,
+    ch.visited_concepts || rc.concept_id
+FROM 
+    concept_hierarchy ch
+JOIN 
+    cdm.concept rc ON ch.related_concept_id = rc.concept_id
+JOIN 
+    cdm.concept_relationship cr ON rc.concept_id = cr.concept_id_1
+JOIN 
+    cdm.concept next_c ON cr.concept_id_2 = next_c.concept_id
+WHERE 
+    ch.level < {Maximum depth}
+    AND rc.standard_concept IS NULL
+    AND NOT (cr.concept_id_2 = ANY(ch.visited_concepts))  -- Prevent cycles
+)
+```
+
+The overall logic of this is pretty similar to the base case.
+This is because the `UNION` clause used to merge the tables generated from the different cases needs to have fields that match, so that keeps the `SELECT` pretty similar.
+The difference you might notice is in the `level` and `visited_concepts` fields.
+
+```sql
+ch.level + 1 as level,
+ch.visited_concepts || rc.concept_id
+```
+
+The level field is set to one in the base case. At each level of recursion, the first of these lines increases it by one.
+Later on, in the `WHERE` clause, we have
+
+```sql
+ch.level < {Maximum depth}
+```
+
+as one of the criteria.
+This means that after a defined level of recursion, the sub-query will return nothing.
+This means the working table will empty, so the recursion will stop, so this limits the recursion.
+The concepts are related pretty densely, so the length of results explode with more levels, so we need this.
+
+The other line is another limit on the recursive case.
+In the `WHERE` clause we have:
+
+```sql
+AND NOT (cr.concept_id_2 = ANY(ch.visited_concepts))  -- Prevent cycles
+```
+
+The base case initialises an array, `visited_concepts`.
+Every iteration, the `concept_id` of the results are added to it.
+The line in the WHERE clause means that the query won't get stuck going round in circles.
+
+The final part of the WHERE clause, `rc.standard_concept IS NULL`, comes from the CDM.
+Concepts can be non-standard, standard or classification (`standard_concept == NULL, S,` or `C` respectively).
+The standard and classification concepts are the basis of describing the non-standard concepts, so I have the query terminate when it hits one.
+
+```sql
+SELECT 
+    concept_id,
+    concept_name,
+    related_concept_id,
+    related_concept_name,
+    standard_concept,
+    related_standard_concept,
+    relationship_id,
+    level
+FROM 
+    concept_hierarchy
+ORDER BY 
+    level, concept_id, related_concept_id;
+```
+
+The end of the query just selects fields from the temporary table and sorts them.
+
+## Converting to a graph
+For the rest to make sense, I need to define the data format.
+
+An efficient way of representing a graph is as an [adjacency list](https://en.wikipedia.org/wiki/Adjacency_list)^[for sparse graphs, which I have assumed this would be].
+This is pretty easy to grasp - it's a list of nodes that share edges.
+However, I'm also interested in the edges having *properties*, in this case, the `relationship_id`, so my adjacency list elements have three parts: source, target, and relationship.
+
+I'm also interested in at least one of the properties of the nodes, too.
+Keeping the information about nodes in the adjacency list would be wasteful, as nodes can have lots of relationships, so we would end up with lots of redundancy.
+To keep this efficiently, I'll keep a separate list of nodes, including the node's `concept_id`
+
+When I was messing about with this query, it was in a Jupyter notebook.
+The python code I was using to handle it used pandas to get the data I wanted out.
+My initial attempt was pretty slow, even though using pandas is often faster than using native python.
+I had two options: try to optimise my python, or rewrite using a faster language.
+This was a good excuse to write it in Rust.
+
+### Writing Rust
+
+Spoiler alert: it turned out to be way easier than I thought.
+I've done various exercises in Rust, and done a fair chunk of each year's Advent of Code for a few years with it before giving up, so I thought it would be really hard.
+It turned out not to be, probably because it's not something designed to be a puzzle.
+I'm not saying I've written good Rust, but the code I wrote works, and can handle hundreds of thousands of relationships way faster than my Python could.
+
+A big part of this is that there are some crates that seem well designed and easy to use for the parts of it that aren't just processing the relationships.
+I wanted to use this graph to draw a visualisation based on the [force-directed graph example in the D3 gallery](https://observablehq.com/@d3/force-directed-graph/2).
+I actually used this in a presentation at work, where people could give me their favourite concept_id^[they really have them] and see its graph.
+The simplest way to achieve this was to make an API that takes HTTP requests and serves some JSON.
+
+Here are the crates I used:
+
+- SQLx for making database queries
+- Tokio because SQLx needs an async runtime
+- Axum to provide a web server
+- serde to produce JSON
+- Tower-HTTP. This is the middleware for Axum
+- dotenvy so I could configure the project's environment with a .env file
+
+#### Making queries
+
+I really liked using SQLx to make my queries.
+I'm not even sure I would be able to use an ORM to make the query I did.
+If it's possible, I don't care.
+In my first versions, where I didn't make a web server, making queries was really nice and simple.
+I used Tokio for the async runtime because it seems popular.
+
+1) Make a struct for what a row of your result should be.
+
+Mine is
+
+```rust
+struct RelationshipDetails {
+  pub concept_id: i32,
+  pub concept_name: String,
+  pub related_concept_id: i32,
+  pub related_concept_name: String,
+  pub standard_concept: Option<String>,
+  pub related_standard_concept: Option<String>,
+  pub relationship_id: String,
+  level: i32,
+}
+```
+
+I find this a satisfying thing to do.
+You tell the code what types of data are going to come in, and you know that if you get this right, then the things you do with that data later are going to be right.
+
+2) Define your connection to the database
+
+```rust
+let pool = PgPoolOptions::new()
+  .max_connections(5)
+  .connect(&db_url)
+  .await
+  .expect("Error connecting to database");
+```
+
+There's a lot of complicated stuff you can do with SQLx, but I didn't have to learn any.
+I imagine this is true for most use cases.
+Believe it or not, given the query above, but I really like simple, and this is it!
+
+3) Define the SQLx code for making the query.
+
+```rust
+let relationships: Vec<RelationshipDetails> = sqlx::query_as::<_,RelationshipDetails>(query)
+  .bind(starting_concept)
+  .bind(max_depth)
+  .fetch_all(pool)
+  .await
+  .expect("Error in querying the database");
+```
+
+This is no harder than using any of the Python libraries I've used, and I actually prefer the function chaining syntax for readability.
+`query_as` is the macro making the query and takes the path to the struct defined earlier.
+The `bind` functions insert variables into the parameters of the query, then `fetch_all` says we want all results.
+It's async, so we `await` the result, and handle errors with `expect`.
+
+#### Creating graphs
+
+I started the actual working of this little app by defining structs for nodes and edges
+
+```rust
+#[derive(Debug, serde::Serialize)]
+struct OMOPNode {
+    id: i32,
+    name: String,
+    standard_concept: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct OMOPEdge {
+    source_id: i32,
+    target_id: i32,
+    relationship_id: String,
+}
+```
+
+And then a graph struct that consists of a vector of nodes and a vector of edges
+
+```rust
+#[derive(Debug, serde::Serialize)]
+pub struct OMOPGraph{
+    nodes: Vec<OMOPNode>,
+    edges: Vec<OMOPEdge>,
+}
+```
+
+Getting the edges is very simple, you can just map over the vector of RelationshipDetails.
+
+```rust
+let edges: Vec<OMOPEdge> = relationships.iter().map(
+    |e| OMOPEdge{
+        source_id: e.concept_id.clone(),
+        target_id: e.related_concept_id.clone(),
+        relationship_id: e.relationship_id.clone(),
+    }
+)
+    .collect();
+```
+
+The nodes are harder.
+I started off trying to be clever and use `reduce`, but I ended up tying myself in knots with it.
+The basic logic of this is, for each row, check whether the concept_id has been seen before.
+If it has, skip it. Otherwise, add an `OMOPNode` with those details.
+Repeat with the related_concept_id.
+
+```rust
+let mut seen = HashSet::new();
+let mut result = Vec::new();
+
+for rel in relationships {
+    if seen.insert(rel.concept_id) {
+        result.push(OMOPNode {
+            id: rel.concept_id.clone(),
+            name: rel.concept_name.clone(),
+            standard_concept: rel.standard_concept.clone(),
+        })
+    };
+    if seen.insert(rel.related_concept_id) {
+        result.push(
+            OMOPNode {
+                id: rel.related_concept_id.clone(),
+                name: rel.related_concept_name.clone(),
+                standard_concept: rel.related_standard_concept.clone(),
+            }
+        )
+    }
+}
+```
+
+I use a HashSet to keep track of the concept_ids that have already been seen because it's quick^[$\mathcal{O}(1)$, nerd].
+Again, I like that this is simple.
+The nodes and edges go into an `OMOPGraph`, which can be turned into JSON because it derives `Serialize`.
+
+#### A web server
+As I wanted this to be something my javascript visualisation could use, the simplest solution for me was to get it to take HTTP requessts.
+A quick search told me people like Axum, and the docs made it look easy.
+
+The basic code for this is pretty ergonomic:
+
+```rust
+let app = Router::new()
+   .route("/recursive_all_relationships/:starting_concept/:max_depth", get(query_all_relationships))
+```
+
+This defines a route for a `GET` request
+
+```rust
+let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+axum::serve(listener, app).await.unwrap();
+```
+
+The `TcpListener` lets it accept requests on localhost port 3000, and then we serve the app with the listener.
+
+It ended up being a little more complicated.
+The data wasn't getting to my visualisation.
+The first time it was because I had something else running on port 3000.
+The second was because I hadn't allowed Cross-origin Resource Sharing in the app^[which I always forget about and then remember "Oh, this is that CORS thingy" and never bother to learn about]
+This is why I had to explicitly depend on Tower-HTTP, and make my app definition
+
+```rust
+let app = Router::new()
+   .route("/recursive_all_relationships/:starting_concept/:max_depth", get(query_all_relationships))
+   .layer(CorsLayer::permissive())
+```
+
+The last part was sharing the database pool with the app as state.
+I used what seems to be [a common Axum pattern](https://docs.rs/axum/0.6.0-rc.5/axum/index.html#using-the-state-extractor)
+
+```rust
+#[derive(Clone)]
+struct AppState {
+    pool: sqlx::PgPool,
+}
+
+let state = Arc::new(AppState {pool});
+
+let app = Router::new()
+  .route("/recursive_all_relationships/:starting_concept/:max_depth", get(query_all_relationships))
+  .layer(CorsLayer::permissive())
+  .with_state(state);
+```
+
+I've written a fair amount of stuff that uses [FastAPI](https://fastapi.tiangolo.com/) to make a python web app lately.
+It's pretty easy to use.
+This seems equally easy, though admittedly my endpoints are simple.
+
+## Conclusions
+I've got a lot more comfortable with SQL since starting my new job.
+That said, my query above was definitely written by trial-and-error, and still feels like it shouldn't work.
+If someone told me I've done it the wrong way, or that I've misunderstood how it works, I wouldn't be too surprised.
+
+I know the Rust isn't very Rust-y, but it works and is as fast as I need it to be.
+For example, the graph conversion code could be optimised by only scanning the related_concept_id column and explicitly adding the starting concept to make it twice as fast.
+I haven't done this because it's fast enough and I'm lazy.
+I am planning on adding to this though; there are other graph things I want to explore from the OMOP CDM.
+There's another layer of relationships in the CDM, a hierarchy of concepts, which isn't captured in the relationships table, and exploring that might provide a useful representation.
+More for curiousity's sake, I want to calculate some sort of centrality for concepts in the graph and see what the important concepts are.
+When I have the opportunity to do this, I'll clean things up and encapsulate behaviours better.
+
+What I wanted to communicate here was that even a dummy like me can use Rust effectively for a real-world problem.
+I hope that has come across.
+If you want to look at the repo, it's [here](https://github.com/Health-Informatics-UoN/omop-relationship-graph/).
+Let me know if you have any thoughts or suggestions!

@@ -2,6 +2,7 @@
   {
     "listing": "/data-analysis/index.html",
     "items": [
+      "/data-analysis/omop-graph-generator.html",
       "/data-analysis/uk_donations.html",
       "/data-analysis/visualising_omop.html",
       "/data-analysis/shallow_nets.html",
