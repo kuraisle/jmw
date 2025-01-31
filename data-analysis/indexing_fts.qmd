@@ -1,0 +1,53 @@
+---
+title: Database indexing is magic
+format: html
+description: Cutting down on full-text search query time
+date-format: iso
+date: 2025-01-23
+---
+Part of my main [work project](https://github.com/Health-Informatics-UoN/lettuce) is an inherited SQL query.
+
+Here's a slightly simplified version:
+
+```sql
+SELECT *
+FROM cdm.concept
+WHERE to_tsvector(concept_name) @@ plainto_tsquery('{search_term}');
+```
+
+The first two lines are pretty self-explanatory, `SELECT` all fields from the `cdm.concept` table.
+The final line does a full-text search on the `concept_name` field for some search term.
+The problem is that this query takes about a minute and a half to execute.
+
+## Full-text search in Postgres
+Why is it so slow then?
+I'll explain a little of how this works - if you want more details, the [Postgres documentation](https://www.postgresql.org/docs/current/textsearch.html) is very helpful.
+
+### `to_tsvector`
+
+
+### `plainto_tsquery`
+
+
+
+The `@@` operator looks for matches between the column of tsvectors and the ts_query.
+
+## Column... materialise!
+The eagle-eyed among you may have noticed that having `to_tsvector(concept_name)` in the query means that each time the query runs, `tsvector`s are created for the whole of the `concept_name` column.
+While the makers of postgres are very clever, and it's very quick, it's always faster to make the computer do less, so my first improvement is to calculate the `tsvector`s ahead of time and store them in a column.
+
+```sql 
+ALTER TABLE cdm.concept 
+ADD COLUMN concept_name_tsv tsvector
+GENERATED ALWAYS AS (to_tsvector('english', concept_name)) STORED;
+```
+
+At the expense of a litte storage, now the query only has to do the searching!
+
+## A Generalised Inverted Index
+Before this, all I knew about a database index was that it could make queries faster.
+I know a small amount more than this now.
+For a single table, there are two types of index: clustered indices, which rearrange the data on disk, so that traversing the tree of the table is quicker for a type of query, and non-clustered indices, which don't rearrange the data, but construct a separate tree, which contains pointers to the data of the table, but do a similar thing of arranging themselves so a type of query can be performed more quickly.
+
+A way an index can improve the speed of a text search query is a Generalised Inverted Index (GIN).
+This works by first constructing a "forward" index
