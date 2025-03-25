@@ -14,7 +14,12 @@ Recently, I have started working full-time^[OK, four days a week] using my data 
  :---|---:|
 Postdoctoral Research Fellow | July 2024 - |
 
-I work on a tool, [LLettuce](https://health-informatics-uon.github.io/lettuce), that applies deep learning to healthcare data. The purpose of this is to help data engineers map their data onto standardised medical vocabularies so that it can be compared with other data without sharing confidential information. Most of my time is working for the School of Medicine, but some is for the Digital Research Service, so I'm gaining valuable software development experience, too.
+I work on a tool, [Lettuce](https://health-informatics-uon.github.io/lettuce), that applies deep learning to healthcare data.
+The purpose of this is to help data engineers map their data onto standardised medical vocabularies so that it can be compared with other data without sharing confidential information.
+I also work on federated analytics and federated learning as part of ELIXIR and the ENTRUST programs.
+The projects I work on are designed to be part of HDR UK's data infrastructure, so I am also pleased to be a member of the HDR UK Impact Committee.
+
+Most of my time is working for the School of Medicine, but some is for the Digital Research Service, so I'm gaining valuable software development experience, too.
 
 ### Excellerate Biosciences
  | |
@@ -55,3 +60,14 @@ It's hard to work anywhere people do stuff with numbers without encountering Exc
 
 ### SQL
 I had read online about how SQL and relational databases were old fashioned and going to be obsolete. Then I read a bit, and designed a database, and the ideas behind relational databases like normalisation just felt very satisfying. I'm no SQL wizard, but I can create a useful [data model](data-analysis/spreadsheet_prison_database.qmd) and write a moderately complex [query](data-analysis/prison_map_move_from_plotly.qmd).
+
+## Conferences and meetings
+- Lightning talk at HDR UK Core Funders forum 2025
+- Oral presentation at "How to be FAIR with data standards" workshop November 2024
+- Lightning talk at HDR UK ECR forum 2024
+- Poster presentation at the International Transmembrane Transporter Symposium 2022
+- Oral Presentation at the European SMALP 2022
+- Attended Key Aspects of Modern Drug Discovery 2021 workshop
+- Online Talk at International SMALP conference 2021
+- Poster Presentation at the 8th FEBS special meeting “ABC proteins: from Multidrug Resistance to Genetic Disease” as ABC2020 Fellow (with grant)
+- Poster Presentation at Circular Dichroism and Linear Dichroism Summer School 2015

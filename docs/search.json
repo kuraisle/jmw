@@ -494,7 +494,7 @@
     "href": "cv.html#professional-history",
     "title": "Curriculum Vitae",
     "section": "Professional History",
-    "text": "Professional History\n\nUniversity of Nottingham\n\n\n\nPostdoctoral Research Fellow\nJuly 2024 -\n\n\n\nI work on a tool, LLettuce, that applies deep learning to healthcare data. The purpose of this is to help data engineers map their data onto standardised medical vocabularies so that it can be compared with other data without sharing confidential information. Most of my time is working for the School of Medicine, but some is for the Digital Research Service, so I’m gaining valuable software development experience, too.\n\n\nExcellerate Biosciences\n\n\n\nSenior Scientist\nOctober 2022 - April 2023\n\n\n\nI ran in vitro screening assays for clients and developed new assays. As well as being responsible for routine analysis of screening data, I also carried out bespoke analyses as required, often preparing material for client meetings.\n\n\nUniversity of Nottingham\n\n\n\nPostdoctoral Research Fellow\nFebruary 2019 - September 2022\n\n\n\nI worked as a postdoc on a project investigating the transport pathway of the multidrug transporter, ABCG2. I was lucky that the investigators on the grant were open to new ideas, so I developed novel assays and novel bioinformatics methods as part of my work. This included bringing supervised and unsupervised machine learning into the analysis of biological data. I also really enjoyed being able to make GUIs to help colleagues without coding experience use tools, and develop interactive dashboards to communicate results. I presented work from this project at national and international conferences, and some has been published4.\n\n\nUniversity of Warwick\n\n\n\nPhD, Medical Sciences\nSeptember 2014 - April 2018\n\n\nBSc, Biochemistry\nSeptember 2011 - June 2014\n\n\n\nMy PhD project developed rhodopsin as an experimental system for membrane protein folding. Part of this involved characterising misfolding mutants, and a detour into characterising the interactions between rhodopsin and a small molecule. I was also part of a really fruitful collaboration with scientists at the University of Cambridge. This all gave me a solid grounding in the application of biophysical methods, as well as my first taste of how satisfying it can be to carry out the right analysis for your data."
+    "text": "Professional History\n\nUniversity of Nottingham\n\n\n\nPostdoctoral Research Fellow\nJuly 2024 -\n\n\n\nI work on a tool, Lettuce, that applies deep learning to healthcare data. The purpose of this is to help data engineers map their data onto standardised medical vocabularies so that it can be compared with other data without sharing confidential information. I also work on federated analytics and federated learning as part of ELIXIR and the ENTRUST programs. The projects I work on are designed to be part of HDR UK’s data infrastructure, so I am also pleased to be a member of the HDR UK Impact Committee.\nMost of my time is working for the School of Medicine, but some is for the Digital Research Service, so I’m gaining valuable software development experience, too.\n\n\nExcellerate Biosciences\n\n\n\nSenior Scientist\nOctober 2022 - April 2023\n\n\n\nI ran in vitro screening assays for clients and developed new assays. As well as being responsible for routine analysis of screening data, I also carried out bespoke analyses as required, often preparing material for client meetings.\n\n\nUniversity of Nottingham\n\n\n\nPostdoctoral Research Fellow\nFebruary 2019 - September 2022\n\n\n\nI worked as a postdoc on a project investigating the transport pathway of the multidrug transporter, ABCG2. I was lucky that the investigators on the grant were open to new ideas, so I developed novel assays and novel bioinformatics methods as part of my work. This included bringing supervised and unsupervised machine learning into the analysis of biological data. I also really enjoyed being able to make GUIs to help colleagues without coding experience use tools, and develop interactive dashboards to communicate results. I presented work from this project at national and international conferences, and some has been published4.\n\n\nUniversity of Warwick\n\n\n\nPhD, Medical Sciences\nSeptember 2014 - April 2018\n\n\nBSc, Biochemistry\nSeptember 2011 - June 2014\n\n\n\nMy PhD project developed rhodopsin as an experimental system for membrane protein folding. Part of this involved characterising misfolding mutants, and a detour into characterising the interactions between rhodopsin and a small molecule. I was also part of a really fruitful collaboration with scientists at the University of Cambridge. This all gave me a solid grounding in the application of biophysical methods, as well as my first taste of how satisfying it can be to carry out the right analysis for your data."
   },
   {
     "objectID": "cv.html#tools",
@@ -509,5 +509,33 @@
     "title": "Curriculum Vitae",
     "section": "Footnotes",
     "text": "Footnotes\n\n\nAt the time, I kept finding myself reading about machine learning and thinking “isn’t this just stats?”↩︎\npapers in preparation↩︎\nOK, four days a week↩︎\nI should probably be writing the rest right now!↩︎\npandas, numpy, scikit-learn, matplotlib↩︎\nHi, Joan!↩︎"
+  },
+  {
+    "objectID": "cv.html#conferences-and-meetings",
+    "href": "cv.html#conferences-and-meetings",
+    "title": "Curriculum Vitae",
+    "section": "Conferences and meetings",
+    "text": "Conferences and meetings\n\nLightning talk at HDR UK Core Funders forum 2025\nOral presentation at “How to be FAIR with data standards” workshop November 2024\nLightning talk at HDR UK ECR forum 2024\nPoster presentation at the International Transmembrane Transporter Symposium 2022\nOral Presentation at the European SMALP 2022\nAttended Key Aspects of Modern Drug Discovery 2021 workshop\nOnline Talk at International SMALP conference 2021\nPoster Presentation at the 8th FEBS special meeting “ABC proteins: from Multidrug Resistance to Genetic Disease” as ABC2020 Fellow (with grant)\nPoster Presentation at Circular Dichroism and Linear Dichroism Summer School 2015"
+  },
+  {
+    "objectID": "data-analysis/omop-graphs-again.html",
+    "href": "data-analysis/omop-graphs-again.html",
+    "title": "More OMOP graphs",
+    "section": "",
+    "text": "I’ve previously looked at the OMOP vocabularies as graphs."
+  },
+  {
+    "objectID": "data-analysis/omop-graphs-again.html#introduction",
+    "href": "data-analysis/omop-graphs-again.html#introduction",
+    "title": "More OMOP graphs",
+    "section": "",
+    "text": "I’ve previously looked at the OMOP vocabularies as graphs."
+  },
+  {
+    "objectID": "data-analysis/omop-graphs-again.html#relationships",
+    "href": "data-analysis/omop-graphs-again.html#relationships",
+    "title": "More OMOP graphs",
+    "section": "Relationships",
+    "text": "Relationships"
   }
 ]

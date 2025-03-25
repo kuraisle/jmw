@@ -4,6 +4,7 @@ format: html
 description: Cutting down on full-text search query time
 date-format: iso
 date: 2025-01-23
+draft: true
 ---
 Part of my main [work project](https://github.com/Health-Informatics-UoN/lettuce) is an inherited SQL query.
 
@@ -42,7 +43,7 @@ ADD COLUMN concept_name_tsv tsvector
 GENERATED ALWAYS AS (to_tsvector('english', concept_name)) STORED;
 ```
 
-At the expense of a litte storage, now the query only has to do the searching!
+At the expense of a little storage, now the query only has to do the searching!
 
 ## A Generalised Inverted Index
 Before this, all I knew about a database index was that it could make queries faster.

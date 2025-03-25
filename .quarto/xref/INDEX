@@ -109,5 +109,14 @@
   },
   "data-analysis/omop-graph-generator.qmd": {
     "omop-graph-generator.html": "647cee4f"
+  },
+  "data-analysis/omop-graphs-again.qmd": {
+    "omop-graphs-again.html": "00986623"
+  },
+  "data-analysis/indexing_fts.qmd": {
+    "indexing_fts.html": "6a4f3d87"
+  },
+  "data-analysis/dumbest-engineer.qmd": {
+    "dumbest-engineer.html": "d082b392"
   }
 }

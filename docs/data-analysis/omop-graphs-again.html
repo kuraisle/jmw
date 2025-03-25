@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2025-03-25">
+<meta name="description" content="Describing OMOP through graphs of its relationships">
 
-<title>Curriculum Vitae – James Mitchell-White</title>
+<title>More OMOP graphs – James Mitchell-White</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,25 +22,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,17 +104,17 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">James Mitchell-White</span>
     </a>
   </div>
@@ -89,19 +125,19 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./papers/index.html"> 
+    <a class="nav-link" href="../papers/index.html"> 
 <span class="menu-text">Papers</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./data-analysis/index.html"> 
+    <a class="nav-link" href="../data-analysis/index.html"> 
 <span class="menu-text">Data Analysis</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./cv.html" aria-current="page"> 
+    <a class="nav-link" href="../cv.html"> 
 <span class="menu-text">CV</span></a>
   </li>  
 </ul>
@@ -115,20 +151,43 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#relationships" id="toc-relationships" class="nav-link" data-scroll-target="#relationships">Relationships</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Curriculum Vitae</h1>
-</div>
+<h1 class="title">More OMOP graphs</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">work projects</div>
+  </div>
+  </div>
 
+<div>
+  <div class="description">
+    Describing OMOP through graphs of its relationships
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2025-03-25</p>
+    </div>
+  </div>
   
     
   </div>
@@ -138,116 +197,18 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>I worked as a biochemist, both in academia and industry, for about nine years. During my PhD, I started using code to analyse my data, and using <a href="./papers/pSRII_abs.html">machine learning</a> to find patterns<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. As well as continuing my development as a wet-lab scientist, I also improved my skills in machine learning and <a href="./papers/functional divergence.html">bioinformatics</a>. I was really excited to have the opportunity to put my own stamp on each of my academic projects, including bringing image analysis and deep learning into my experiments<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. My time working in a pharmaceutical contract research organisation gave me a new appreciation for the challenges of working with larger datasets.</p>
-<p>Recently, I have started working full-time<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> using my data science skills. Most of my time is spent developing a <a href="https://health-informatics-uon.github.io/lettuce">tool that uses deep learning to harmonise health data</a>, though I’m involved in a few other data projects. I’m really enjoying using that part of my brain more, though it’s very strange not using a pipette.</p>
-<section id="professional-history" class="level2">
-<h2 class="anchored" data-anchor-id="professional-history">Professional History</h2>
-<section id="university-of-nottingham" class="level3">
-<h3 class="anchored" data-anchor-id="university-of-nottingham">University of Nottingham</h3>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Postdoctoral Research Fellow</td>
-<td style="text-align: right;">July 2024 -</td>
-</tr>
-</tbody>
-</table>
-<p>I work on a tool, <a href="https://health-informatics-uon.github.io/lettuce">Lettuce</a>, that applies deep learning to healthcare data. The purpose of this is to help data engineers map their data onto standardised medical vocabularies so that it can be compared with other data without sharing confidential information. I also work on federated analytics and federated learning as part of ELIXIR and the ENTRUST programs. The projects I work on are designed to be part of HDR UK’s data infrastructure, so I am also pleased to be a member of the HDR UK Impact Committee.</p>
-<p>Most of my time is working for the School of Medicine, but some is for the Digital Research Service, so I’m gaining valuable software development experience, too.</p>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>I’ve previously looked at the OMOP vocabularies as <a href="../data-analysis/omop-graph-generator.html">graphs</a>.</p>
 </section>
-<section id="excellerate-biosciences" class="level3">
-<h3 class="anchored" data-anchor-id="excellerate-biosciences">Excellerate Biosciences</h3>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Senior Scientist</td>
-<td style="text-align: right;">October 2022 - April 2023</td>
-</tr>
-</tbody>
-</table>
-<p>I ran <em>in vitro</em> screening assays for clients and developed new assays. As well as being responsible for routine analysis of screening data, I also carried out bespoke analyses as required, often preparing material for client meetings.</p>
-</section>
-<section id="university-of-nottingham-1" class="level3">
-<h3 class="anchored" data-anchor-id="university-of-nottingham-1">University of Nottingham</h3>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Postdoctoral Research Fellow</td>
-<td style="text-align: right;">February 2019 - September 2022</td>
-</tr>
-</tbody>
-</table>
-<p>I worked as a postdoc on a project investigating the transport pathway of the multidrug transporter, ABCG2. I was lucky that the investigators on the grant were open to new ideas, so I developed <a href="./papers/abcg2_tr-fret.html">novel assays</a> and <a href="./papers/functional divergence.html">novel bioinformatics methods</a> as part of my work. This included bringing supervised and unsupervised machine learning into the analysis of biological data. I also really enjoyed being able to make GUIs to help colleagues without coding experience use tools, and develop interactive dashboards to communicate results. I presented work from this project at national and international conferences, and some has been published<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
-</section>
-<section id="university-of-warwick" class="level3">
-<h3 class="anchored" data-anchor-id="university-of-warwick">University of Warwick</h3>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">PhD, Medical Sciences</td>
-<td style="text-align: right;">September 2014 - April 2018</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">BSc, Biochemistry</td>
-<td style="text-align: right;">September 2011 - June 2014</td>
-</tr>
-</tbody>
-</table>
-<p>My PhD project developed rhodopsin as an experimental system for <a href="./papers/rhodopsin_encyclopedia.html">membrane protein folding</a>. Part of this involved characterising misfolding <a href="./papers/retinitis_pigmentosa_mutants.html">mutants</a>, and a detour into characterising the interactions between rhodopsin and a <a href="./papers/chlorin_e6.html">small molecule</a>. I was also part of a really fruitful collaboration with scientists at the University of Cambridge. This all gave me a solid grounding in the application of biophysical methods, as well as my first taste of how satisfying it can be to carry out the right analysis for your data.</p>
-</section>
-</section>
-<section id="tools" class="level2">
-<h2 class="anchored" data-anchor-id="tools">Tools</h2>
-<section id="python" class="level3">
-<h3 class="anchored" data-anchor-id="python">Python</h3>
-<p>I’m most comfortable carrying out tasks in python, with plenty of experience with the usual suspects in a data toolkit<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>. If you look in my <a href="./data-analysis/index.html">projects</a>, you’ll see some more unusual libraries being used, which are just the tip of an iceberg of tools I’ve picked up once or twice.</p>
-</section>
-<section id="javascript" class="level3">
-<h3 class="anchored" data-anchor-id="javascript">Javascript</h3>
-<p>I found javascript quite hard to begin with, and some parts of it still seem pretty weird to me. However, I really like the functional features that have been brought in, and if you want to make something interactive to share with people, it can’t be beaten!</p>
-</section>
-<section id="r" class="level3">
-<h3 class="anchored" data-anchor-id="r">R</h3>
-<p>My first forays into code were with R, simply because the one biologist I knew well who could code used it<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>. I miss it sometimes, and the tidyverse is a lovely bit of joined-up design for handling data.</p>
-</section>
-<section id="microsoft-stuff" class="level3">
-<h3 class="anchored" data-anchor-id="microsoft-stuff">Microsoft stuff</h3>
-<p>It’s hard to work anywhere people do stuff with numbers without encountering Excel. I have always been pretty comfortable with it, and in my last job I got a lot more comfortable with its more advanced features. This included writing a fair bit of VBA, which I will do if you ask very nicely. In the time since, I dug a bit deeper into Microsoft’s offerings, and I’m capable with Power BI and Power Query.</p>
-</section>
-<section id="sql" class="level3">
-<h3 class="anchored" data-anchor-id="sql">SQL</h3>
-<p>I had read online about how SQL and relational databases were old fashioned and going to be obsolete. Then I read a bit, and designed a database, and the ideas behind relational databases like normalisation just felt very satisfying. I’m no SQL wizard, but I can create a useful <a href="./data-analysis/spreadsheet_prison_database.html">data model</a> and write a moderately complex <a href="./data-analysis/prison_map_move_from_plotly.html">query</a>.</p>
-</section>
-</section>
-<section id="conferences-and-meetings" class="level2">
-<h2 class="anchored" data-anchor-id="conferences-and-meetings">Conferences and meetings</h2>
-<ul>
-<li>Lightning talk at HDR UK Core Funders forum 2025</li>
-<li>Oral presentation at “How to be FAIR with data standards” workshop November 2024</li>
-<li>Lightning talk at HDR UK ECR forum 2024</li>
-<li>Poster presentation at the International Transmembrane Transporter Symposium 2022</li>
-<li>Oral Presentation at the European SMALP 2022</li>
-<li>Attended Key Aspects of Modern Drug Discovery 2021 workshop</li>
-<li>Online Talk at International SMALP conference 2021</li>
-<li>Poster Presentation at the 8th FEBS special meeting “ABC proteins: from Multidrug Resistance to Genetic Disease” as ABC2020 Fellow (with grant)</li>
-<li>Poster Presentation at Circular Dichroism and Linear Dichroism Summer School 2015</li>
-</ul>
+<section id="relationships" class="level2">
+<h2 class="anchored" data-anchor-id="relationships">Relationships</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
 
-
-<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
-
-<ol>
-<li id="fn1"><p>At the time, I kept finding myself reading about machine learning and thinking “isn’t this just stats?”<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>papers in preparation<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>OK, four days a week<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>I should probably be writing the rest right now!<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>pandas, numpy, scikit-learn, matplotlib<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>Hi, Joan!<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
