@@ -1,0 +1,69 @@
+---
+title: Introducing the world's dumbest data engineer
+format: html
+description: It's me. I'm the world's dumbest data engineer
+date-format: iso
+date: 2025-01-31
+draft: true
+---
+
+## Introduction
+
+## Attempts
+### DuckDB
+
+### DuckDB again
+
+### Polars
+
+This doesn't work. 
+
+### Pyarrow (#1)
+
+```python
+conn = psycopg2.connect(db_path)
+print("Connected to database\n")
+register_vector(conn)
+print("Registered vector type")
+cursor = conn.cursor()
+
+# Open the Parquet file in streaming mode
+parquet_file = pq.ParquetFile(parquet_file_path)
+
+# Each row will occupy 8514-ish bytes at the end
+# To keep the memory usage below 4 Gb, setting the batch size to 200_000
+for n, batch in enumerate(
+    parquet_file.iter_batches(batch_size=200000)
+):  # Iterate through batches
+    print(f"Processing batch {n}")
+    df = (
+        pl.DataFrame(batch)
+        .select(["concept_id", "embeddings"])
+        .with_columns(
+            pl.format(
+                "[{}]",
+                pl.col("embeddings").cast(pl.List(pl.String)).list.join(","),
+            )
+        )
+    )
+    for row in tqdm(df.iter_rows()):
+        update_query = f"""
+            UPDATE {table_name}
+                SET {column_name} = %s
+                WHERE concept_id = %s"""
+        cursor.execute(update_query, (row[1], row[0]))
+
+    print(f"Processed batch {n}")
+    conn.commit()  # Commit after processing each batch for performance
+conn.close()
+```
+
+In this version, I use pyarrow's `iter_batches` to load a batch of 200,000 rows from the parquet file^[I was scared of running out of memory again, so I've been conservative with batch size here].
+Then I use the code from my previous polars attempt to turn the array into the string that pgvector wants.
+That step happens pretty quickly.
+I added tqdm to the inner loop so I could get an idea of how long the update takes.
+For the first 200,000 updates, it ran at ~300 iterations per second.
+As I have more than 7 million entries, this would take over six hours to complete.
+
+### Pyarrow (#2)
+
