@@ -62,6 +62,8 @@ It's hard to work anywhere people do stuff with numbers without encountering Exc
 I had read online about how SQL and relational databases were old fashioned and going to be obsolete. Then I read a bit, and designed a database, and the ideas behind relational databases like normalisation just felt very satisfying. I'm no SQL wizard, but I can create a useful [data model](data-analysis/spreadsheet_prison_database.qmd) and write a moderately complex [query](data-analysis/prison_map_move_from_plotly.qmd).
 
 ## Conferences and meetings
+- DeepLearn summer school July 2025
+- Poster at the third UKAI conference June 2025
 - Lightning talk at HDR UK Core Funders forum 2025
 - Oral presentation at "How to be FAIR with data standards" workshop November 2024
 - Lightning talk at HDR UK ECR forum 2024

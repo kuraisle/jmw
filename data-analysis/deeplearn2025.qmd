@@ -1,0 +1,93 @@
+---
+title: My time at DeepLearn 2025
+format: html
+description: In July 2025 I went to the DeepLearn summer school at the University of Maia, Portugal. This is a summary of my experience.
+date-format: iso
+date: 2025-08-13
+draft: true
+---
+
+I had a pretty intense week in Portugal.
+The lectures ran all day, and then there was a [Hackathon](#Hackathon) running most evenings which I took part in.
+I flew into Porto and had a couple of hours to walk around the city before getting the metro out to Maia, a more industrial town about an hour out.
+The metro runs nicely, but the payment system is pretty confusing.
+
+I learned a lot from the lectures, despite some of the intimidating maths involved.
+Each lecturer ran a series of three talks, and you couldn't attend all the sessions because three ran in parallel.
+I had to miss some I was looking forward to, but attendees can view them online for a while.
+Hopefully I can find the time!
+
+## Lectures
+
+::: {.callout collapse="true"}
+
+### From Prototype to Production - Evaluation Strategies for Agentic Applications
+I came along to this set of lectures because I've been thinking about (and working on in dribs and drabs) an agentic version of my work project, [Lettuce](https://github.com/Health-Informatics-UoN/lettuce).
+These were helpful lectures, given by Mark Derdzinski.
+The information given in these lectures is more broadly applicable than just agentic applications though.
+The real use of these is for contexts where you don't have a hard ground truth for an application's outputs.
+This is relevant to us because the job of Lettuce is to suggest the correct term from a set vocabulary for a user's input.
+This is called "mapping" a source term to OMOP.
+Almost the first thing I did when I started the project was to try and find some way of evaluating its outputs, and it has been tricky.
+
+With human mapping, there's no one "correct" term, so the best we can do in development is to map the terms ourselves and evaluate pipelines by their agreement with our choices but that's just like, uh, your opinion, man.
+I have a fantasy about getting a list of source terms and asking as many people who do this work to map them and using multiple people's mappings to score outputs, but getting that many busy people to do more of their job is unrealistic.
+This is why I found these lectures really useful.
+Mark had plenty of advice on how to design sets of metrics that can serve as proxies for your desired behaviour.
+He framed this all in a paradigm of evaluations lying on a continuum of difficulty to collect, with simple assertions at one end, and the collection of user feedback at the other, which I found really useful.
+There are plenty of examples in my notes of me being excited because Mark articulated something I had incoherently been thinking for a while, which is always nice.
+
+There was also a good amount of material on how to handle evaluations within the context of an organisation.
+Partly this was about getting stakeholders to agree on what useful metrics are, which is a useful soft skill I do not posess.
+Part of it was getting metrics to work as part of development (I think he even used the phrase "Eval-driven development" at one point), which I liked.
+This included ways of dealing with metrics running in production and dealing with distribution changes in production.
+This part made me feel guilty for not having proper logging and metrics set up, which we will need as people start using Lettuce.
+
+:::
+
+::: {.callout collapse="true"}
+
+### Multimodal AI for Healthcare
+As I'm working on AI for healthcare, I thought I should probably go to these, though I really wanted to go to the "Machine learning at the frontier of Astrophysics" series running in parallel.
+Jayashree Kalpathy-Cramer gave the lectures, which are an overview or introduction to the topic.
+Having been in the field for a while, I could have done with the lectures getting into more of the details, but it was interesting to hear talks from the perspective of a group leader in the field.
+Part of that perspective was being able to acknowledge that large language models can perform well in particular tasks, but that there are significant potential downsides, like loss of skills and users relying on them too much, particularly in critical situations.
+
+Another thing that was nice was to understand a lot more of it than would have done coming to this talk a year ago.
+I remember bouncing off explanations of multimodal models not that long ago, and now it all seems pretty understandable.
+
+
+:::
+
+::: {.callout collapse="true"}
+
+### Discovery Science through the lens of Deep learning
+This wasn't one of the lecture series, but the keynote speech - and what a keynote!
+
+
+:::
+
+::: {.callout collapse="true"}
+
+### Atlas Wang
+:::
+
+::: {.callout collapse="true"}
+
+### Ben Hu
+:::
+
+::: {.callout collapse="true"}
+
+### Rex Ying
+:::
+
+::: {.callout collapse="true"}
+
+### Samira Ebrahimi Kahou
+:::
+
+## Round table
+
+
+## Hackathon

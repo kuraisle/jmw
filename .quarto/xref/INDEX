@@ -118,5 +118,11 @@
   },
   "data-analysis/dumbest-engineer.qmd": {
     "dumbest-engineer.html": "d082b392"
+  },
+  "data-analysis/deeplearn2025.qmd": {
+    "deeplearn2025.html": "817b7034"
+  },
+  "data-analysis/omop-graphs-again.ipynb": {
+    "omop-graphs-again.html": "fd47526b"
   }
 }
