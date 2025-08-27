@@ -5,6 +5,7 @@ description: It's me. I'm the world's dumbest data engineer
 date-format: iso
 date: 2025-01-31
 draft: true
+draft-mode: gone
 ---
 
 ## Introduction
